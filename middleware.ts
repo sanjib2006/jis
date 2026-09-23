@@ -52,6 +52,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Enforce role isolation on dashboard sub-routes
+  if (user && isDashboardRoute) {
+    const userRole = (user.user_metadata?.role as string) || "REGISTRAR";
+    const expectedPrefix = `/${userRole.toLowerCase()}`;
+    if (!pathname.startsWith(expectedPrefix)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = expectedPrefix;
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   // Redirect authenticated users away from login page
   if (user && pathname === "/login") {
     const userRole = (user.user_metadata?.role as string) || "REGISTRAR";

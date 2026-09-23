@@ -174,11 +174,11 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [x] **Phase 4** — Hearing scheduling, adjournment & proceedings
 - [x] **Phase 5** — Case resolution & registrar queries
 - [x] **Phase 6** — Judge & Lawyer dashboards, case history & billing
-- [ ] **Phase 7** — Audit log viewer & RLS policies
+- [x] **Phase 7** — Audit log viewer & RLS policies
 - [ ] **Phase 8** — Testing, polish & deployment
 
 **Last worked on by:** Antigravity - 2026-09-23
-**Notes from last session:** Phase 6 complete. Judge dashboard & free case history browsing (`/judge`, `/judge/history`, `/judge/history/[cin]`), Lawyer dashboard with monthly/all-time billing metrics (`/lawyer`), pay-per-view case inspection with ₹50 fee confirmation dialog (`/lawyer/history`, `/lawyer/history/[cin]`), Lawyer itemized billing ledger (`/lawyer/billing`), universal keyword search across all fields (`CaseSearch`), upgraded Registrar dashboard with 4-metric horizontal strip, today's court sessions, and recent administrative audit stream (`/registrar`), and 33 passing Vitest tests (100% clean Next.js build across 20 routes). Ready for Phase 7 (Audit log viewer & RLS policies).
+**Notes from last session:** Phase 7 complete. Implemented Registrar Audit Log Viewer (`/registrar/audit`) with server-log density, expandable JSON details dialog, pagination, and multi-parameter filtering (action, entity, actor, date range). Crafted comprehensive Supabase Row-Level Security policies (`supabase/rls-policies.sql`) covering all 7 models with append-only audit enforcement. Hardened route isolation in middleware and added role guards to all server actions. Implemented government-styled error boundaries (`error.tsx`) and 404 pages (`not-found.tsx`). Added 8 new unit tests (41/41 passing across all 6 test suites) with 100% clean Next.js build across 21 routes. Ready for Phase 8 (Testing, polish & deployment).
 
 ---
 

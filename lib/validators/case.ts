@@ -60,3 +60,18 @@ export const createCaseSchema = z
   );
 
 export type CreateCaseInput = z.infer<typeof createCaseSchema>;
+
+export const recordJudgmentSchema = z.object({
+  cin: z.string().min(1, "Case Identification Number (CIN) is required"),
+  judgmentDate: z.coerce.date({
+    errorMap: () => ({ message: "Enter a valid judgment date" }),
+  }),
+  summary: z
+    .string()
+    .min(10, "Judgment summary must be at least 10 characters long")
+    .max(5000, "Judgment summary cannot exceed 5000 characters")
+    .trim(),
+});
+
+export type RecordJudgmentInput = z.infer<typeof recordJudgmentSchema>;
+

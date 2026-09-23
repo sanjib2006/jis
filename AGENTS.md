@@ -171,14 +171,14 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [x] **Phase 1** — Authentication & role-based routing
 - [x] **Phase 2** — Account management (Registrar)
 - [x] **Phase 3** — Courtroom management & case registration
-- [ ] **Phase 4** — Hearing scheduling, adjournment & proceedings
+- [x] **Phase 4** — Hearing scheduling, adjournment & proceedings
 - [ ] **Phase 5** — Case resolution & registrar queries
 - [ ] **Phase 6** — Judge & Lawyer dashboards, case history & billing
 - [ ] **Phase 7** — Audit log viewer & RLS policies
 - [ ] **Phase 8** — Testing, polish & deployment
 
-**Last worked on by:** Gemini (Antigravity) - 2026-09-23
-**Notes from last session:** Phase 3 complete. Courtroom management (CRUD with slot capacity rules), Case registration (two-column form with cross-field date validation, active personnel assignment, auto CIN generation, and audit logging), Case docket table with monospace CIN badges, Case detail view shell, and Vitest unit tests verified with clean production build. Ready for Phase 4 (Hearing Scheduling, Adjournment & Proceedings).
+**Last worked on by:** Antigravity - 2026-09-23
+**Notes from last session:** Phase 4 complete. Hearing scheduling with dynamic courtroom capacity checks and judge conflict avoidance, statutory adjournment recording with reason tracking and optional next-date scheduling, proceeding summary recording with case status updates, chronological hearing timeline on case detail page, master hearing calendar docket (`/registrar/hearings`), and comprehensive Vitest unit tests (17 passing, 100% clean Next.js build). Ready for Phase 5 (Case Resolution & Registrar Queries).
 
 ---
 

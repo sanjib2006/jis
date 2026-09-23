@@ -1,4 +1,5 @@
 import {
+  LayoutDashboard,
   FileText,
   Calendar,
   Building2,
@@ -17,8 +18,13 @@ export interface NavItem {
 
 export const REGISTRAR_NAV: NavItem[] = [
   {
-    label: "Case Docket",
+    label: "Dashboard",
     href: "/registrar",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Case Docket",
+    href: "/registrar/cases",
     icon: FileText,
   },
   {

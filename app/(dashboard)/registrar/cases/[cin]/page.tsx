@@ -6,6 +6,7 @@ import { CinBadge } from "@/components/shared/cin-badge";
 import { CaseDetail } from "@/components/shared/case-detail";
 import { HearingTimeline } from "@/components/shared/hearing-timeline";
 import { ScheduleHearingDialog } from "@/components/hearings/schedule-dialog";
+import { JudgmentDialog } from "@/components/cases/judgment-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,12 +86,19 @@ export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
         </div>
 
         {/* Action Bar */}
-        {!isCaseClosed && (
+        {!isCaseClosed ? (
           <div className="flex items-center gap-2">
             <ScheduleHearingDialog
               cin={caseData.cin}
               judgeId={caseData.judgeId}
             />
+            {(caseData.status === "PENDING" || caseData.status === "ADJOURNED") && (
+              <JudgmentDialog cin={caseData.cin} />
+            )}
+          </div>
+        ) : (
+          <div className="text-xs font-mono px-2.5 py-1 rounded-sm border border-border bg-muted/60 text-muted-foreground uppercase">
+            Closed Docket &bull; Read-Only
           </div>
         )}
       </div>
@@ -117,7 +125,7 @@ export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
         <HearingTimeline
           hearings={caseData.hearings}
           courtrooms={courtrooms}
-          canManage={true}
+          canManage={!isCaseClosed}
         />
       </div>
     </div>

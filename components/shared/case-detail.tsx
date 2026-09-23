@@ -1,20 +1,66 @@
 import { CinBadge } from "@/components/shared/cin-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, Gavel, Shield, User } from "lucide-react";
-import type { Case, User as UserModel } from "@/types";
+import { Calendar, Gavel, Shield, User, Scale, Lock } from "lucide-react";
+import type { Case, User as UserModel, Judgment } from "@/types";
 
 interface CaseDetailProps {
   caseData: Case & {
     judge: UserModel;
     prosecutor: UserModel;
     lawyer: UserModel;
+    judgment?: Judgment | null;
   };
 }
 
 export function CaseDetail({ caseData }: CaseDetailProps) {
+  const isCaseClosed =
+    caseData.status === "CLOSED" ||
+    caseData.status === "RESOLVED" ||
+    !!caseData.judgment;
+
   return (
     <div className="space-y-6">
+      {/* Read-Only Closure Notice */}
+      {isCaseClosed && (
+        <div className="flex items-center justify-between px-3 py-2 text-xs bg-muted/50 border border-border rounded-sm text-foreground/80 font-mono">
+          <div className="flex items-center gap-2">
+            <Lock className="size-3.5 text-muted-foreground" />
+            <span className="font-semibold uppercase tracking-wider">
+              Permanent Judicial Record &bull; Closed
+            </span>
+          </div>
+          <span className="text-[11px] text-muted-foreground hidden sm:inline">
+            Statutory Archive (Read-Only)
+          </span>
+        </div>
+      )}
+
+      {/* Judgment Findings Card (if recorded) */}
+      {caseData.judgment && (
+        <Card className="rounded-sm border border-border bg-card">
+          <CardHeader className="pb-2.5 border-b border-border/60 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Scale className="size-4 text-accent" />
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Official Judicial Judgment
+              </CardTitle>
+            </div>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              Date: {format(new Date(caseData.judgment.judgmentDate), "dd MMM yyyy")}
+            </span>
+          </CardHeader>
+          <CardContent className="pt-3.5 space-y-2 text-xs">
+            <div className="text-[11px] text-muted-foreground font-mono uppercase">
+              Final Decision & Order of the Court
+            </div>
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap font-sans bg-muted/20 p-3 rounded-sm border border-border/50">
+              {caseData.judgment.summary}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="rounded-sm border border-border bg-card">
         <CardHeader className="pb-3 border-b border-border/60 flex flex-row items-center justify-between">
           <div>

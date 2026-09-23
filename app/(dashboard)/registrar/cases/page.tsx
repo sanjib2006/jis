@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CaseTable } from "@/components/cases/case-table";
+import { CaseNavTabs } from "@/components/cases/case-nav-tabs";
+import { CinSearchBar } from "@/components/cases/cin-search-bar";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
@@ -60,6 +62,14 @@ export default async function CasesPage() {
           <Plus className="size-3.5 mr-1" />
           Register New Case
         </Link>
+      </div>
+
+      {/* Navigation Sub-Tabs & CIN Search */}
+      <div className="space-y-4">
+        <CaseNavTabs />
+        <div className="pt-1">
+          <CinSearchBar />
+        </div>
       </div>
 
       <CaseTable cases={cases} />

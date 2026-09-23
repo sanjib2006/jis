@@ -22,9 +22,11 @@ export function CaseTable({ cases }: CaseTableProps) {
   if (cases.length === 0) {
     return (
       <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
-        <p className="font-medium text-foreground">No case dockets registered</p>
+        <p className="font-medium text-foreground">No cases registered yet.</p>
         <p className="mt-1">
-          Select &ldquo;Register New Case&rdquo; to enroll the first judicial case.
+          <Link href="/registrar/cases/new" className="text-primary hover:underline font-medium">
+            Register your first case.
+          </Link>
         </p>
       </div>
     );

@@ -55,8 +55,8 @@ export function AccountTable({ users, currentUser }: AccountTableProps) {
 
   if (users.length === 0) {
     return (
-      <div className="border border-border rounded-sm p-8 text-center text-xs text-muted-foreground">
-        No judicial accounts found in the registry.
+      <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
+        <p className="font-medium text-foreground">No user accounts.</p>
       </div>
     );
   }

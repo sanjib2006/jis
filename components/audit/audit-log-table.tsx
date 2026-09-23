@@ -35,7 +35,7 @@ export function AuditLogTable({ logs }: AuditLogTableProps) {
   if (logs.length === 0) {
     return (
       <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
-        <p className="font-medium text-foreground">No audit entries found</p>
+        <p className="font-medium text-foreground">No audit log entries.</p>
         <p className="mt-1">
           Adjust the filter parameters above to broaden your query.
         </p>

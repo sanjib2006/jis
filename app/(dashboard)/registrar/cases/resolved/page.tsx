@@ -85,7 +85,7 @@ export default async function ResolvedCasesPage({
       {resolvedCases.length === 0 ? (
         <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
           <p className="font-medium text-foreground">
-            No resolved cases found for the selected date range
+            No resolved cases in this date range.
           </p>
           <p className="mt-1">
             {format(new Date(fromDateStr), "dd MMM yyyy")} to{" "}

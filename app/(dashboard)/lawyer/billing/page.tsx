@@ -113,7 +113,7 @@ export default async function LawyerBillingPage() {
       {/* Ledger Table */}
       {billingData.views.length === 0 ? (
         <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
-          <p className="font-medium text-foreground">No case inspection charges on record</p>
+          <p className="font-medium text-foreground">No case views recorded.</p>
           <p className="mt-1">
             Accessing archived cases in the Case Law repository will automatically itemize fees here.
           </p>

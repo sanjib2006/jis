@@ -63,10 +63,7 @@ export default async function PendingCasesPage() {
 
       {cases.length === 0 ? (
         <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
-          <p className="font-medium text-foreground">No pending cases on the judicial docket</p>
-          <p className="mt-1">
-            All registered cases are currently resolved or closed.
-          </p>
+          <p className="font-medium text-foreground">No pending cases.</p>
         </div>
       ) : (
         <div className="border border-border rounded-sm overflow-hidden bg-card">

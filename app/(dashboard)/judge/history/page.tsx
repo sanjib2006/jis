@@ -80,7 +80,7 @@ export default async function JudgeHistoryPage() {
       {/* Table of Closed Cases */}
       {closedCases.length === 0 ? (
         <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
-          <p className="font-medium text-foreground">No closed cases in the judicial archive</p>
+          <p className="font-medium text-foreground">No closed cases available.</p>
           <p className="mt-1">
             Cases will appear here once judgments are recorded and cases are closed by the Registrar.
           </p>

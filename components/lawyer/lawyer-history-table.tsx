@@ -32,7 +32,7 @@ export function LawyerHistoryTable({ cases }: LawyerHistoryTableProps) {
     return (
       <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">
         <p className="font-medium text-foreground">
-          No closed cases in the judicial archive
+          No closed cases available.
         </p>
         <p className="mt-1">
           Archived dockets will appear here as judgments are finalized.

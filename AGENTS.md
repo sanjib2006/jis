@@ -168,8 +168,8 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 > **Instructions for any agent:** Update the checkboxes below after completing each phase. This is how the next agent knows where to pick up.
 
 - [x] **Phase 0** — Project scaffold & infrastructure
-- [ ] **Phase 1** — Authentication & role-based routing
-- [ ] **Phase 2** — Account management (Registrar)
+- [x] **Phase 1** — Authentication & role-based routing
+- [x] **Phase 2** — Account management (Registrar)
 - [ ] **Phase 3** — Courtroom management & case registration
 - [ ] **Phase 4** — Hearing scheduling, adjournment & proceedings
 - [ ] **Phase 5** — Case resolution & registrar queries
@@ -178,7 +178,7 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [ ] **Phase 8** — Testing, polish & deployment
 
 **Last worked on by:** Gemini (Antigravity) - 2026-09-23
-**Notes from last session:** Phase 0 complete. Next.js 15, Prisma 5.22.0, Supabase SSR helpers, shadcn/ui components, custom anti-AI-slop design system (slate + burnt sienna), and initial route group shells configured and verified with clean production build. Ready for Phase 1 (Auth & Role-based Routing).
+**Notes from last session:** Phase 2 complete. User account management (create, list, deactivate, reactivate) with Supabase Admin auth provisioning, Prisma DB sync, audit logging (AuditLog), registrar-exclusive authorization, density-styled directory table, modal dialog, and comprehensive Vitest unit tests implemented and verified. Ready for Phase 3 (Courtroom Management & Case Registration).
 
 ---
 

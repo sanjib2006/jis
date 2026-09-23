@@ -173,12 +173,12 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [x] **Phase 3** — Courtroom management & case registration
 - [x] **Phase 4** — Hearing scheduling, adjournment & proceedings
 - [x] **Phase 5** — Case resolution & registrar queries
-- [ ] **Phase 6** — Judge & Lawyer dashboards, case history & billing
+- [x] **Phase 6** — Judge & Lawyer dashboards, case history & billing
 - [ ] **Phase 7** — Audit log viewer & RLS policies
 - [ ] **Phase 8** — Testing, polish & deployment
 
 **Last worked on by:** Antigravity - 2026-09-23
-**Notes from last session:** Phase 5 complete. Case resolution & statutory judgment recording with immutable case closure, read-only enforcement across closed dockets, pending cases registry sorted by CIN (`/registrar/cases/pending`), resolved cases registry with date-range filtering (`/registrar/cases/resolved`), cases by hearing session date query (`/registrar/cases/by-hearing`), fast CIN search bar, case sub-navigation tabs, and comprehensive Vitest unit tests (25 passing, 100% clean Next.js build). Ready for Phase 6 (Judge & Lawyer dashboards, case history & billing).
+**Notes from last session:** Phase 6 complete. Judge dashboard & free case history browsing (`/judge`, `/judge/history`, `/judge/history/[cin]`), Lawyer dashboard with monthly/all-time billing metrics (`/lawyer`), pay-per-view case inspection with ₹50 fee confirmation dialog (`/lawyer/history`, `/lawyer/history/[cin]`), Lawyer itemized billing ledger (`/lawyer/billing`), universal keyword search across all fields (`CaseSearch`), upgraded Registrar dashboard with 4-metric horizontal strip, today's court sessions, and recent administrative audit stream (`/registrar`), and 33 passing Vitest tests (100% clean Next.js build across 20 routes). Ready for Phase 7 (Audit log viewer & RLS policies).
 
 ---
 

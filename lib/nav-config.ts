@@ -51,16 +51,26 @@ export const REGISTRAR_NAV: NavItem[] = [
 
 export const JUDGE_NAV: NavItem[] = [
   {
-    label: "Judicial Archive",
+    label: "Dashboard",
     href: "/judge",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Case Archive",
+    href: "/judge/history",
     icon: History,
   },
 ];
 
 export const LAWYER_NAV: NavItem[] = [
   {
-    label: "Case Law Search",
+    label: "Dashboard",
     href: "/lawyer",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Case Law Search",
+    href: "/lawyer/history",
     icon: History,
   },
   {

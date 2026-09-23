@@ -512,3 +512,65 @@ export async function getCaseByCinAction(
   }
 }
 
+export type SearchResultCase = Case & {
+  judge: User;
+  judgment: Judgment | null;
+};
+
+export async function searchCasesAction(
+  query: string
+): Promise<ActionResult<SearchResultCase[]>> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return {
+      success: false,
+      error: "Unauthorized access.",
+    };
+  }
+
+  const q = query.trim();
+  if (q.length < 2) {
+    return {
+      success: true,
+      data: [],
+    };
+  }
+
+  const isPrivileged = currentUser.role === "REGISTRAR";
+
+  try {
+    const cases = await prisma.case.findMany({
+      where: {
+        ...(isPrivileged ? {} : { status: { in: ["CLOSED", "RESOLVED"] } }),
+        OR: [
+          { cin: { contains: q, mode: "insensitive" } },
+          { defendantName: { contains: q, mode: "insensitive" } },
+          { crimeType: { contains: q, mode: "insensitive" } },
+          { crimeLocation: { contains: q, mode: "insensitive" } },
+          { arrestingOfficer: { contains: q, mode: "insensitive" } },
+          {
+            judgment: {
+              summary: { contains: q, mode: "insensitive" },
+            },
+          },
+        ],
+      },
+      include: {
+        judge: true,
+        judgment: true,
+      },
+      take: 50,
+      orderBy: { createdAt: "desc" },
+    });
+
+    return { success: true, data: cases };
+  } catch (error) {
+    console.error("Error searching case records:", error);
+    return {
+      success: false,
+      error: "Failed to execute judicial case search query.",
+    };
+  }
+}
+
+

@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  REGISTRAR
+  JUDGE
+  LAWYER
+}
+
+enum CaseStatus {
+  REGISTERED
+  PENDING
+  ADJOURNED
+  RESOLVED
+  CLOSED
+}
+
+enum HearingStatus {
+  SCHEDULED
+  COMPLETED
+  ADJOURNED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      Role
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  judgeCases      Case[]     @relation("JudgeCases")
+  prosecutorCases Case[]     @relation("ProsecutorCases")
+  lawyerCases     Case[]     @relation("LawyerCases")
+  caseViews       CaseView[]
+  auditLogs       AuditLog[]
+
+  @@index([role])
+}
+
+model Courtroom {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  location String?
+  maxSlots Int     @default(5) // max hearings per day in this courtroom
+  isActive Boolean @default(true)
+
+  hearings Hearing[]
+}
+
+model Case {
+  cin                    String     @id @default(cuid())
+  defendantName          String
+  defendantAddress       String
+  crimeType              String
+  crimeDate              DateTime
+  crimeLocation          String
+  arrestingOfficer       String
+  arrestDate             DateTime
+  trialStartDate         DateTime
+  expectedCompletionDate DateTime
+  status                 CaseStatus @default(REGISTERED)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  judgeId      String
+  prosecutorId String
+  lawyerId     String
+  judge        User   @relation("JudgeCases", fields: [judgeId], references: [id])
+  prosecutor   User   @relation("ProsecutorCases", fields: [prosecutorId], references: [id])
+  lawyer       User   @relation("LawyerCases", fields: [lawyerId], references: [id])
+
+  hearings  Hearing[]
+  judgment  Judgment?
+  caseViews CaseView[]
+
+  @@index([status])
+  @@index([judgeId])
+  @@index([lawyerId])
+  @@index([crimeType])
+  @@index([defendantName])
+  @@index([trialStartDate])
+}
+
+model Hearing {
+  id                String        @id @default(uuid())
+  cin               String
+  courtroomId       String?
+  hearingDate       DateTime
+  hearingStatus     HearingStatus @default(SCHEDULED)
+  proceedingSummary String?
+  adjournmentReason String?
+  nextHearingDate   DateTime?
+  createdAt         DateTime      @default(now())
+
+  case      Case       @relation(fields: [cin], references: [cin])
+  courtroom Courtroom? @relation(fields: [courtroomId], references: [id])
+
+  @@index([cin])
+  @@index([hearingDate])
+  @@index([courtroomId, hearingDate])
+}
+
+model Judgment {
+  id           String   @id @default(uuid())
+  cin          String   @unique
+  judgmentDate DateTime
+  summary      String
+
+  case Case @relation(fields: [cin], references: [cin])
+
+  @@index([judgmentDate])
+}
+
+model CaseView {
+  id           String   @id @default(uuid())
+  lawyerId     String
+  cin          String
+  viewedAt     DateTime @default(now())
+  chargeAmount Decimal  @default(0)
+
+  lawyer User @relation(fields: [lawyerId], references: [id])
+  case   Case @relation(fields: [cin], references: [cin])
+
+  @@index([lawyerId])
+  @@index([cin])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  action    String // e.g. "USER_CREATED", "USER_DEACTIVATED", "CASE_STATUS_CHANGED"
+  entity    String // e.g. "User", "Case", "Hearing"
+  entityId  String // PK of the affected row
+  details   Json? // optional structured payload (old/new values, etc.)
+  createdAt DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}

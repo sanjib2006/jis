@@ -170,7 +170,7 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [x] **Phase 0** — Project scaffold & infrastructure
 - [x] **Phase 1** — Authentication & role-based routing
 - [x] **Phase 2** — Account management (Registrar)
-- [ ] **Phase 3** — Courtroom management & case registration
+- [x] **Phase 3** — Courtroom management & case registration
 - [ ] **Phase 4** — Hearing scheduling, adjournment & proceedings
 - [ ] **Phase 5** — Case resolution & registrar queries
 - [ ] **Phase 6** — Judge & Lawyer dashboards, case history & billing
@@ -178,7 +178,7 @@ Six models + two enums. Full Prisma schema is in `prisma/schema.prisma` (source 
 - [ ] **Phase 8** — Testing, polish & deployment
 
 **Last worked on by:** Gemini (Antigravity) - 2026-09-23
-**Notes from last session:** Phase 2 complete. User account management (create, list, deactivate, reactivate) with Supabase Admin auth provisioning, Prisma DB sync, audit logging (AuditLog), registrar-exclusive authorization, density-styled directory table, modal dialog, and comprehensive Vitest unit tests implemented and verified. Ready for Phase 3 (Courtroom Management & Case Registration).
+**Notes from last session:** Phase 3 complete. Courtroom management (CRUD with slot capacity rules), Case registration (two-column form with cross-field date validation, active personnel assignment, auto CIN generation, and audit logging), Case docket table with monospace CIN badges, Case detail view shell, and Vitest unit tests verified with clean production build. Ready for Phase 4 (Hearing Scheduling, Adjournment & Proceedings).
 
 ---
 

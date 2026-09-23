@@ -24,7 +24,7 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function RegistrarPage() {
   const currentUser = await getCurrentUser();

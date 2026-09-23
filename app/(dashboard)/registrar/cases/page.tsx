@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function CasesPage() {
   const currentUser = await getCurrentUser();

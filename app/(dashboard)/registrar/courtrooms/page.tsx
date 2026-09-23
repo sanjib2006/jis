@@ -5,7 +5,7 @@ import { CreateCourtroomDialog } from "@/components/courtrooms/create-courtroom-
 import { CourtroomTable } from "@/components/courtrooms/courtroom-table";
 import { Badge } from "@/components/ui/badge";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function CourtroomsPage() {
   const currentUser = await getCurrentUser();

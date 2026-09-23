@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { CurrentUser } from "@/types";
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const supabase = await createClient();
     const {
@@ -43,4 +44,4 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     console.error("Error in getCurrentUser:", error);
     return null;
   }
-}
+});

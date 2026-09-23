@@ -18,7 +18,7 @@ import {
 import { format, subDays } from "date-fns";
 import { ChevronRight } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 interface ResolvedCasesPageProps {
   searchParams: Promise<{ from?: string; to?: string }>;

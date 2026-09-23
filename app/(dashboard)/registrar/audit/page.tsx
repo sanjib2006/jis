@@ -12,7 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 interface AuditPageProps {
   searchParams: Promise<{

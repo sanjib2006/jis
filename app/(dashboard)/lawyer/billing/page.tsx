@@ -17,7 +17,7 @@ import { ArrowLeft, CreditCard, ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function LawyerBillingPage() {
   const currentUser = await getCurrentUser();

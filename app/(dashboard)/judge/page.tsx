@@ -9,7 +9,7 @@ import { CaseSearch } from "@/components/shared/case-search";
 import { History, FileText, ArrowRight, Gavel } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function JudgeDashboardPage() {
   const currentUser = await getCurrentUser();

@@ -5,7 +5,7 @@ import { CreateAccountDialog } from "@/components/accounts/create-account-dialog
 import { AccountTable } from "@/components/accounts/account-table";
 import { Badge } from "@/components/ui/badge";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function AccountsPage() {
   const currentUser = await getCurrentUser();

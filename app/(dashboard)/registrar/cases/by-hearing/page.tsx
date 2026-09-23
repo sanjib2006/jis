@@ -18,7 +18,7 @@ import {
 import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 interface CasesByHearingDatePageProps {
   searchParams: Promise<{ date?: string }>;

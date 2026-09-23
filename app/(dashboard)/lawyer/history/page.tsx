@@ -9,7 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function LawyerHistoryPage() {
   const currentUser = await getCurrentUser();

@@ -47,6 +47,7 @@ export function CaseNavTabs() {
           <Link
             key={tab.href}
             href={tab.href}
+            prefetch={true}
             className={cn(
               "inline-flex items-center gap-1.5 px-3 py-2 font-medium border-b-2 -mb-px transition-colors rounded-t-sm",
               isActive

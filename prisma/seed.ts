@@ -1,7 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
   console.log("Starting JIS database seed...");
@@ -9,22 +15,41 @@ async function main() {
   const registrarEmail = "registrar@jis.local";
   const registrarPassword = process.env.INITIAL_REGISTRAR_PASSWORD || "Registrar@123456";
 
-  // 1. Seed or Upsert Registrar User in Prisma
-  const registrar = await prisma.user.upsert({
-    where: { email: registrarEmail },
-    update: {
-      role: "REGISTRAR",
-      isActive: true,
-    },
-    create: {
+  // 1. Seed or Upsert Key Personnel in Prisma
+  const defaultUsers = [
+    {
       name: "Chief Judicial Registrar",
       email: registrarEmail,
-      role: "REGISTRAR",
-      isActive: true,
+      role: "REGISTRAR" as const,
+      password: registrarPassword,
     },
-  });
+    {
+      name: "Hon. Justice V. K. Sen",
+      email: "judge@jis.local",
+      role: "JUDGE" as const,
+      password: process.env.INITIAL_JUDGE_PASSWORD || "Judge@123456",
+    },
+    {
+      name: "Adv. Rajesh Raman",
+      email: "lawyer@jis.local",
+      role: "LAWYER" as const,
+      password: process.env.INITIAL_LAWYER_PASSWORD || "Lawyer@123456",
+    },
+  ];
 
-  console.log(`Prisma User record ensured for: ${registrar.email} (Role: ${registrar.role})`);
+  for (const u of defaultUsers) {
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: { role: u.role, isActive: true },
+      create: {
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        isActive: true,
+      },
+    });
+    console.log(`Prisma User record ensured for: ${u.email} (Role: ${u.role})`);
+  }
 
   // 2. Seed Courtrooms (Phase 3 readiness)
   const courtrooms = [
@@ -42,7 +67,7 @@ async function main() {
   }
   console.log("Default courtrooms seeded.");
 
-  // 3. Create Registrar in Supabase Auth if credentials provided
+  // 3. Create default users in Supabase Auth if credentials provided
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -59,24 +84,26 @@ async function main() {
         },
       });
 
-      const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email: registrarEmail,
-        password: registrarPassword,
-        email_confirm: true,
-        user_metadata: {
-          name: registrar.name,
-          role: "REGISTRAR",
-        },
-      });
+      for (const u of defaultUsers) {
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+          email: u.email,
+          password: u.password,
+          email_confirm: true,
+          user_metadata: {
+            name: u.name,
+            role: u.role,
+          },
+        });
 
-      if (error) {
-        if (error.message.toLowerCase().includes("already registered")) {
-          console.log(`Supabase Auth user already exists for ${registrarEmail}.`);
-        } else {
-          console.warn(`Supabase Auth creation notice: ${error.message}`);
+        if (error) {
+          if (error.message.toLowerCase().includes("already registered")) {
+            console.log(`Supabase Auth user already exists for ${u.email}.`);
+          } else {
+            console.warn(`Supabase Auth creation notice (${u.email}): ${error.message}`);
+          }
+        } else if (data.user) {
+          console.log(`Supabase Auth user created successfully for: ${data.user.email}`);
         }
-      } else if (data.user) {
-        console.log(`Supabase Auth user created successfully for: ${data.user.email}`);
       }
     } catch (authErr) {
       console.warn("Could not connect to Supabase Auth admin API:", authErr);

@@ -128,6 +128,23 @@ describe("Phase 6 — Judge & Lawyer Dashboards, Case History & Billing Unit Tes
         })
       );
     });
+
+    it("creates a new CaseView row each time a lawyer views a case (pay-per-view)", async () => {
+      vi.mocked(getCurrentUser).mockResolvedValue(lawyerUser as any);
+      vi.mocked(prisma.case.findUnique).mockResolvedValue(closedCaseMock as any);
+      vi.mocked(prisma.caseView.create).mockResolvedValue({
+        id: "view-new",
+        lawyerId: lawyerUser.id,
+        cin: "cin-2026-0001",
+        chargeAmount: CHARGE_PER_VIEW,
+        viewedAt: new Date(),
+      } as any);
+
+      await viewCaseAsLawyerAction("cin-2026-0001");
+      await viewCaseAsLawyerAction("cin-2026-0001");
+
+      expect(prisma.caseView.create).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("viewCaseAsJudgeAction (FR18, TC4)", () => {

@@ -191,6 +191,28 @@ describe("Phase 3 — Courtroom & Case Registration Unit Tests", () => {
         })
       );
     });
+
+    it("rejects case registration when required fields are missing", async () => {
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        id: "reg-1",
+        name: "Chief Registrar",
+        email: "reg@jis.local",
+        role: "REGISTRAR",
+        isActive: true,
+        createdAt: new Date(),
+      });
+
+      const invalidPayload = {
+        ...validCasePayload,
+        defendantName: "", // missing required name
+      };
+
+      const result = await registerCaseAction(invalidPayload as any);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(prisma.case.create).not.toHaveBeenCalled();
+    });
   });
 
   describe("Courtroom Management Actions", () => {

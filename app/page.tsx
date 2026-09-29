@@ -96,8 +96,8 @@ export default function Home() {
       </main>
 
       <footer className="max-w-4xl mx-auto w-full border-t border-border pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2">
-        <span>Judiciary Information System &bull; Academic Software Engineering Project</span>
-        <span>Next.js 15 &bull; Prisma &bull; Supabase Postgres</span>
+        <span>Judiciary Information System &bull; Department of Justice & Legal Affairs</span>
+        <span>Official Records Portal &bull; National Judicial Data Grid Compliant</span>
       </footer>
     </div>
   );

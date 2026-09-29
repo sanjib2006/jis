@@ -68,7 +68,7 @@ export function Sidebar({
 
       <div className="p-3 border-t border-sidebar-border text-[11px] text-primary-foreground/60 font-mono">
         <p className="truncate">State Judicial System</p>
-        <p className="text-[10px] text-primary-foreground/40">v1.0.0 &bull; Secure</p>
+        <p className="text-[10px] text-primary-foreground/40">Authorized Personnel Access Only</p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  BarChart3,
   FileText,
   Calendar,
   Building2,
@@ -21,6 +22,11 @@ export const REGISTRAR_NAV: NavItem[] = [
     label: "Dashboard",
     href: "/registrar",
     icon: LayoutDashboard,
+  },
+  {
+    label: "Analytics",
+    href: "/registrar/analytics",
+    icon: BarChart3,
   },
   {
     label: "Case Docket",

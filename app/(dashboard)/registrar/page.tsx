@@ -20,6 +20,7 @@ import {
   Clock,
   ArrowRight,
   ShieldAlert,
+  BarChart3,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,16 @@ export default async function RegistrarPage() {
 
         <div className="flex items-center gap-2">
           <Link
+            href="/registrar/analytics"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "h-8 text-xs font-medium rounded-sm inline-flex items-center"
+            )}
+          >
+            <BarChart3 className="size-3.5 mr-1" />
+            Analytics
+          </Link>
+          <Link
             href="/registrar/hearings"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
@@ -225,6 +236,34 @@ export default async function RegistrarPage() {
             View resolved registry &rarr;
           </Link>
         </div>
+      </div>
+
+      {/* Analytics Preview Banner */}
+      <div className="border border-border rounded-sm bg-card p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-sm bg-accent/10 border border-accent/30 text-accent flex items-center justify-center shrink-0">
+            <BarChart3 className="size-4" />
+          </div>
+          <div>
+            <span className="font-semibold text-foreground block">
+              Judicial Caseload Analytics & Docket Intelligence
+            </span>
+            <span className="text-muted-foreground text-[11px]">
+              Explore 6-month filing trends, procedural status distribution, and trial completion efficiency.
+            </span>
+          </div>
+        </div>
+
+        <Link
+          href="/registrar/analytics"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-7 text-xs font-medium rounded-sm inline-flex items-center shrink-0"
+          )}
+        >
+          <span>Open Analytics Portal</span>
+          <ArrowRight className="size-3 ml-1" />
+        </Link>
       </div>
 
       {/* Today's Hearings Section */}

@@ -87,9 +87,11 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
 
       const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(sentBody.to).toBe("registrar@jis.local");
-      expect(sentBody.subject).toBe("Your JIS Portal Verification Code");
+      expect(sentBody.subject).toBe("Your Judiciary Portal verification code");
       expect(sentBody.html).toContain("987654");
       expect(sentBody.html).toContain("Hon. Registrar");
+      expect(sentBody.html).toContain("Valid for 10 minutes · Single use");
+      expect(sentBody.html).toContain("We received a request to sign in to your Registrar administrative account.");
     });
 
     it("handles Resend API rejection gracefully", async () => {

@@ -14,6 +14,7 @@ import { logAudit } from "@/actions/audit.actions";
 import { sendHearingNoticeEmail } from "@/lib/email";
 import type { ActionResult, Hearing, Courtroom, Case, User } from "@/types";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export interface AvailableSlotInfo {
   courtroomId: string;
@@ -236,6 +237,19 @@ export async function scheduleHearingAction(
 
     // Non-blocking dispatch of formal hearing notice to assigned counsel
     try {
+      let baseUrl: string | undefined;
+      try {
+        const headerList = await headers();
+        const host =
+          headerList.get("x-forwarded-host") || headerList.get("host");
+        const proto = headerList.get("x-forwarded-proto") || "https";
+        if (host) {
+          baseUrl = `${proto}://${host}`;
+        }
+      } catch {
+        // Outside request context or unit test environments
+      }
+
       await sendHearingNoticeEmail({
         cin: validated.cin,
         defendantName: caseRecord.defendantName,
@@ -249,6 +263,7 @@ export async function scheduleHearingAction(
         prosecutorEmail: caseRecord.prosecutor?.email || "",
         lawyerName: caseRecord.lawyer?.name || "Defense Counsel",
         lawyerEmail: caseRecord.lawyer?.email || "",
+        baseUrl,
       });
     } catch (emailErr) {
       console.error(

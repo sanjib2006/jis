@@ -184,6 +184,28 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       ]);
     });
 
+    it("resolves base URL from VERCEL_PROJECT_PRODUCTION_URL when baseUrl and NEXT_PUBLIC_APP_URL are not provided", async () => {
+      process.env.RESEND_API_KEY = "re_mock_api_key";
+      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "sandbox@jis.local";
+      process.env.VERCEL_PROJECT_PRODUCTION_URL = "court-portal.vercel.app";
+      delete process.env.NEXT_PUBLIC_APP_URL;
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ id: "msg_vercel" }),
+      });
+      global.fetch = mockFetch;
+
+      const optionsWithoutBaseUrl = { ...mockNoticeOptions, baseUrl: undefined };
+      const result = await sendHearingNoticeEmail(optionsWithoutBaseUrl);
+
+      expect(result.success).toBe(true);
+      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(sentBody.html).toContain(
+        "https://court-portal.vercel.app/verify/CIN-2026-0042"
+      );
+    });
+
     it("handles Resend network errors gracefully without crashing caller", async () => {
       process.env.RESEND_API_KEY = "re_mock_api_key";
       process.env.TWO_FACTOR_RECIPIENT_EMAIL = "sandbox@jis.local";

@@ -205,11 +205,21 @@ export async function sendHearingNoticeEmail(
     formattedDateTime = String(options.hearingDate);
   }
 
-  const baseUrl =
-    options.baseUrl ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
-  const docketUrl = `${baseUrl}/verify/${encodeURIComponent(options.cin)}`;
+  // Resolve base URL for links in email (handles Vercel production/preview and custom domains)
+  let resolvedBaseUrl = options.baseUrl;
+  if (!resolvedBaseUrl) {
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      resolvedBaseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      resolvedBaseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    } else if (process.env.VERCEL_URL) {
+      resolvedBaseUrl = `https://${process.env.VERCEL_URL}`;
+    } else {
+      resolvedBaseUrl = "http://localhost:3000";
+    }
+  }
+  resolvedBaseUrl = resolvedBaseUrl.replace(/\/+$/, "");
+  const docketUrl = `${resolvedBaseUrl}/verify/${encodeURIComponent(options.cin)}`;
 
   // Console notice for audit & logging (dev environment)
   if (process.env.NODE_ENV !== "production") {

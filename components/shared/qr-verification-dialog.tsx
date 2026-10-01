@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import QRCode from "qrcode";
 import {
   Dialog,
@@ -17,7 +18,6 @@ import {
   Copy,
   Check,
   ExternalLink,
-  ShieldCheck,
   Download,
 } from "lucide-react";
 
@@ -107,7 +107,14 @@ export function QrVerificationDialog({
       <DialogContent className="sm:max-w-md border border-border bg-card">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
-            <ShieldCheck className="size-4 text-accent" />
+            <Image
+              src="/emblem.ico"
+              alt="JIS Emblem"
+              width={18}
+              height={18}
+              unoptimized
+              className="size-4.5 object-contain shrink-0"
+            />
             <DialogTitle className="text-sm font-semibold tracking-tight">
               Statutory Docket Authenticator
             </DialogTitle>

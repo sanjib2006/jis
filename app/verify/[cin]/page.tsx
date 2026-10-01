@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import {
-  Scale,
   ShieldCheck,
   ShieldAlert,
   Clock,
@@ -60,8 +60,15 @@ export default async function PublicCaseVerificationPage({
         {/* Official Court Registry Header */}
         <header className="border-b border-border pb-5 space-y-2 text-center sm:text-left sm:flex sm:items-center sm:justify-between sm:space-y-0">
           <div className="flex items-center gap-3 justify-center sm:justify-start">
-            <div className="size-11 rounded-sm bg-primary/10 border border-border flex items-center justify-center text-primary shrink-0">
-              <Scale className="size-6 text-foreground" />
+            <div className="size-11 rounded-sm bg-primary/10 border border-border flex items-center justify-center shrink-0">
+              <Image
+                src="/emblem.ico"
+                alt="Judiciary Information System Emblem"
+                width={32}
+                height={32}
+                unoptimized
+                className="size-7 object-contain"
+              />
             </div>
             <div>
               <h1 className="text-base font-semibold tracking-tight text-foreground uppercase">

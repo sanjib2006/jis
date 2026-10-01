@@ -184,3 +184,4 @@ jis/
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
 3. Deploy the application. Next.js App Router and Turbopack will optimize serverless functions and static pages automatically.
+

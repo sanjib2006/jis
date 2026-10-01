@@ -34,7 +34,7 @@ The Judiciary Information System (JIS) is an enterprise full-stack web applicati
 ### 1. Clone & Install Dependencies
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/sanjib2006/jis.git
 cd jis
 npm install
 ```

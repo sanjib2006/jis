@@ -139,7 +139,7 @@ export async function sendOtpEmail({
 export interface HearingNoticeEmailOptions {
   cin: string;
   defendantName: string;
-  crimeType: string;
+  crimeType?: string;
   hearingDate: Date | string;
   courtroomName: string;
   courtroomLocation?: string | null;
@@ -180,16 +180,30 @@ export async function sendHearingNoticeEmail(
   }
 
   const hearingDateObj = new Date(options.hearingDate);
-  const formattedDate = !isNaN(hearingDateObj.getTime())
-    ? hearingDateObj.toLocaleDateString("en-IN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+  let formattedDateTime: string;
+  if (!isNaN(hearingDateObj.getTime())) {
+    const datePart = hearingDateObj.toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+    });
+    const hours = hearingDateObj.getUTCHours();
+    const minutes = hearingDateObj.getUTCMinutes();
+    if (hours === 0 && minutes === 0) {
+      formattedDateTime = `${datePart} · 10:30 AM IST (Court Session)`;
+    } else {
+      const timePart = hearingDateObj.toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",
-      })
-    : String(options.hearingDate);
+        hour12: true,
+        timeZone: "Asia/Kolkata",
+      });
+      formattedDateTime = `${datePart} · ${timePart} IST`;
+    }
+  } else {
+    formattedDateTime = String(options.hearingDate);
+  }
 
   const baseUrl =
     options.baseUrl ||
@@ -203,9 +217,8 @@ export async function sendHearingNoticeEmail(
     console.log("  ⚖️  JUDICIARY INFORMATION SYSTEM — NOTICE OF HEARING DISPATCH");
     console.log("=".repeat(64));
     console.log(`  Case CIN           : ${options.cin}`);
-    console.log(`  Defendant          : ${options.defendantName}`);
-    console.log(`  Offense / Charge   : ${options.crimeType}`);
-    console.log(`  Scheduled Hearing  : ${formattedDate}`);
+    console.log(`  Matter             : State vs. ${options.defendantName}`);
+    console.log(`  Scheduled Hearing  : ${formattedDateTime}`);
     console.log(
       `  Courtroom Facility : ${options.courtroomName}${
         options.courtroomLocation ? ` (${options.courtroomLocation})` : ""
@@ -232,117 +245,97 @@ export async function sendHearingNoticeEmail(
       body: JSON.stringify({
         from: fromEmail,
         to: recipients.length === 1 ? recipients[0] : recipients,
-        subject: `Court Notice: Hearing Scheduled for Case ${options.cin}`,
+        subject: `Court Notice: Hearing Scheduled | Case ${options.cin}`,
         html: `
           <!DOCTYPE html>
           <html>
             <head>
               <meta charset="utf-8">
-              <title>Notice of Scheduled Hearing — JIS</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Court Notice: Hearing Scheduled | Case ${options.cin}</title>
             </head>
-            <body style="margin: 0; padding: 0; background-color: #f6f5f1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #142127;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px 16px;">
-                <tr>
-                  <td align="center">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #ffffff; border: 1px solid #dedfdb; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                      
-                      <!-- Header -->
-                      <tr>
-                        <td style="background-color: #103937; padding: 24px 32px; border-bottom: 2px solid #b28b4d;">
-                          <h1 style="margin: 0; font-size: 18px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">
-                            Judiciary Information System
-                          </h1>
-                          <p style="margin: 4px 0 0 0; font-size: 11px; color: #b28b4d; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">
-                            Official Notice of Judicial Hearing · Cause Summons
-                          </p>
-                        </td>
-                      </tr>
+            <body style="margin: 0; padding: 40px 16px; background-color: #f6f5f1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #142127; -webkit-font-smoothing: antialiased;">
+              <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e4df; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                
+                <!-- Institutional Header -->
+                <div style="background-color: #103937; padding: 22px 30px; border-bottom: 2px solid #b28b4d;">
+                  <h1 style="margin: 0; font-size: 17px; font-weight: 600; color: #ffffff; letter-spacing: 0.3px;">
+                    Judiciary Information System
+                  </h1>
+                  <p style="margin: 4px 0 0 0; font-size: 11px; color: #d1b88a; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">
+                    Central Court Registry · Notice of Scheduled Hearing
+                  </p>
+                </div>
 
-                      <!-- Notice Banner -->
-                      <tr>
-                        <td style="background-color: #fcf9f2; border-bottom: 1px solid #f0e6d2; padding: 12px 32px;">
-                          <p style="margin: 0; font-size: 12px; color: #825a18; font-weight: 500;">
-                            🏛️ Formal Judicial Summons &amp; Notice of Cause Listing
-                          </p>
-                        </td>
-                      </tr>
+                <!-- Body Content -->
+                <div style="padding: 30px;">
+                  <p style="margin: 0 0 14px 0; font-size: 14px; line-height: 1.5; color: #142127;">
+                    To the Presiding Judge, Public Prosecutor, and Defense Counsel,
+                  </p>
+                  <p style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.6; color: #495459;">
+                    A judicial hearing has been scheduled for the following matter. Please review the session details and courtroom allocation below:
+                  </p>
 
-                      <!-- Body Content -->
-                      <tr>
-                        <td style="padding: 32px;">
-                          <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #142127;">
-                            To the Presiding Judge, Assigned Prosecution, and Defense Counsel,
-                          </p>
-                          <p style="margin: 0 0 20px 0; font-size: 13px; line-height: 1.6; color: #495459;">
-                            Please take formal notice that the Registrar has scheduled a judicial hearing session for the cause identified below. All assigned counsel are required to appear before the designated bench at the specified calendar time.
-                          </p>
+                  <!-- Case Details Table -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #faf9f6; border: 1px solid #dedfdb; border-radius: 4px; margin: 0 0 26px 0; font-size: 13px;">
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80; width: 36%;">Case Number (CIN)</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-family: monospace; font-weight: 700; color: #103937;">${options.cin}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Title of Matter</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #142127;">State vs. ${options.defendantName}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Scheduled Date &amp; Time</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 700; color: #103937;">${formattedDateTime}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Courtroom Bench</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.courtroomName}${options.courtroomLocation ? ` (${options.courtroomLocation})` : ""}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Presiding Judge</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.judgeName}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Public Prosecutor</td>
+                      <td style="padding: 11px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.prosecutorName} (${options.prosecutorEmail})</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 11px 16px; font-weight: 600; color: #6f7a80;">Defense Counsel</td>
+                      <td style="padding: 11px 16px; color: #142127;">${options.lawyerName} (${options.lawyerEmail})</td>
+                    </tr>
+                  </table>
 
-                          <!-- Case Details Table -->
-                          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f6f5f1; border: 1px solid #dedfdb; border-radius: 4px; margin: 0 0 24px 0; font-size: 13px;">
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80; width: 38%;">Case Identification (CIN)</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-family: monospace; font-weight: 700; color: #103937;">${options.cin}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Defendant / Accused</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #142127;">${options.defendantName}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Offense / Statutory Charge</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.crimeType}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Hearing Date &amp; Time</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 700; color: #103937;">${formattedDate}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Courtroom Bench</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.courtroomName}${options.courtroomLocation ? ` (${options.courtroomLocation})` : ""}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Presiding Judge</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.judgeName}</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; font-weight: 600; color: #6f7a80;">Public Prosecutor</td>
-                              <td style="padding: 12px 16px; border-bottom: 1px solid #dedfdb; color: #142127;">${options.prosecutorName} (${options.prosecutorEmail})</td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 12px 16px; font-weight: 600; color: #6f7a80;">Defense Counsel</td>
-                              <td style="padding: 12px 16px; color: #142127;">${options.lawyerName} (${options.lawyerEmail})</td>
-                            </tr>
-                          </table>
+                  <!-- Primary Action Button -->
+                  <div style="text-align: center; margin: 26px 0 28px 0;">
+                    <a href="${docketUrl}" style="display: inline-block; background-color: #103937; color: #ffffff; text-decoration: none; padding: 11px 24px; font-size: 13px; font-weight: 600; border-radius: 4px; letter-spacing: 0.3px;">
+                      View Case Docket &rarr;
+                    </a>
+                  </div>
 
-                          <!-- Action Button -->
-                          <div style="text-align: center; margin: 28px 0 24px 0;">
-                            <a href="${docketUrl}" style="display: inline-block; background-color: #103937; color: #ffffff; text-decoration: none; padding: 12px 24px; font-size: 13px; font-weight: 600; border-radius: 4px; letter-spacing: 0.3px;">
-                              Access Certified Docket &amp; QR Record &rarr;
-                            </a>
-                          </div>
+                  <!-- Directions to Counsel -->
+                  <div style="background-color: #fcfbf9; border: 1px solid #eeece7; border-radius: 4px; padding: 14px 16px; margin: 0 0 10px 0;">
+                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #142127;">
+                      Directions to Counsel:
+                    </p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; color: #495459;">
+                      <li><strong>Attendance:</strong> Assigned counsel or an authorized representative must be present when the matter is called on the Daily Cause List.</li>
+                      <li><strong>Adjournment:</strong> Any formal request for adjournment must be submitted through the Registrar portal prior to the sitting of the bench.</li>
+                    </ul>
+                  </div>
+                </div>
 
-                          <!-- Statutory Notice -->
-                          <p style="margin: 0 0 8px 0; font-size: 12px; line-height: 1.5; color: #6f7a80;">
-                            <strong>Notice to Counsel:</strong> Attendance is mandatory at the designated courtroom session. In the event of an unavoidable emergency, an application for adjournment must be formally submitted through the Registrar portal prior to the calling of the cause list.
-                          </p>
-                          <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #6f7a80;">
-                            This is an automated transmission dispatched by the Judiciary Information System. Certified case history and digital decree records are accessible via the portal link above.
-                          </p>
-                        </td>
-                      </tr>
+                <!-- Footer -->
+                <div style="background-color: #fbfaf7; padding: 16px 30px; border-top: 1px solid #dedfdb; text-align: center;">
+                  <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #8e979c;">
+                    State Judicial System · National Judicial Data Grid Compliant<br>
+                    Dispatched automatically by the Central Electronic Court Registry
+                  </p>
+                </div>
 
-                      <!-- Footer -->
-                      <tr>
-                        <td style="background-color: #fbfaf7; padding: 16px 32px; border-top: 1px solid #dedfdb; text-align: center;">
-                          <p style="margin: 0; font-size: 11px; color: #8e979c;">
-                            State Judicial System · National Judicial Data Grid Compliant · Automated Court Summons System
-                          </p>
-                        </td>
-                      </tr>
-
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              </div>
             </body>
           </html>
         `,

@@ -151,15 +151,16 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
 
       const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(sentBody.to).toBe("sandbox-owner@court.gov.in");
-      expect(sentBody.subject).toBe("Court Notice: Hearing Scheduled for Case CIN-2026-0042");
+      expect(sentBody.subject).toBe("Court Notice: Hearing Scheduled | Case CIN-2026-0042");
       expect(sentBody.html).toContain("CIN-2026-0042");
-      expect(sentBody.html).toContain("Vikram Malhotra");
-      expect(sentBody.html).toContain("Securities Fraud & Embezzlement");
+      expect(sentBody.html).toContain("State vs. Vikram Malhotra");
       expect(sentBody.html).toContain("Courtroom 03");
       expect(sentBody.html).toContain("Annex Wing, 2nd Floor");
       expect(sentBody.html).toContain("Hon. Justice Sen");
       expect(sentBody.html).toContain("Adv. Rajesh Sharma");
       expect(sentBody.html).toContain("Adv. Meera Nair");
+      expect(sentBody.html).toContain("View Case Docket");
+      expect(sentBody.html).toContain("Directions to Counsel");
       expect(sentBody.html).toContain("https://jis.court.gov.in/verify/CIN-2026-0042");
     });
 

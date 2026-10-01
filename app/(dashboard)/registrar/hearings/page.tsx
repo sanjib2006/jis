@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 
 export const revalidate = 15;
 
@@ -88,7 +88,19 @@ export default async function HearingsPage({ searchParams }: HearingsPageProps) 
           </p>
         </div>
 
-        <HearingsDateFilter currentDate={selectedDateStr} />
+        <div className="flex items-center gap-2">
+          <HearingsDateFilter currentDate={selectedDateStr} />
+          <a
+            href={`/api/pdf/cause-list?date=${selectedDateStr}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-8 px-2.5 inline-flex items-center gap-1.5 text-xs font-medium rounded-sm border border-border bg-background hover:bg-muted text-foreground transition-colors shrink-0"
+            title="Download Daily Cause List PDF"
+          >
+            <FileText className="size-3.5 text-accent" />
+            <span className="hidden sm:inline">Cause List (PDF)</span>
+          </a>
+        </div>
       </div>
 
       {hearings.length === 0 ? (

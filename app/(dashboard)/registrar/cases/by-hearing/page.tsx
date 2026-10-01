@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 
 export const revalidate = 15;
 
@@ -101,7 +101,20 @@ export default async function CasesByHearingDatePage({
         </div>
       </div>
 
-      <CasesHearingDateFilter currentDate={selectedDateStr} />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex-1">
+          <CasesHearingDateFilter currentDate={selectedDateStr} />
+        </div>
+        <a
+          href={`/api/pdf/cause-list?date=${selectedDateStr}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="h-10 sm:h-auto py-2 px-3 inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-sm border border-border bg-background hover:bg-muted text-foreground transition-colors shrink-0"
+        >
+          <FileText className="size-3.5 text-accent" />
+          <span>Export Cause List (PDF)</span>
+        </a>
+      </div>
 
       {cases.length === 0 ? (
         <div className="border border-border rounded-sm p-12 text-center text-xs text-muted-foreground bg-card">

@@ -8,6 +8,7 @@ import {
   Clock,
   ArrowLeft,
   FileCheck2,
+  FileText,
   Lock,
 } from "lucide-react";
 import { getPublicCaseVerification } from "@/lib/verification";
@@ -54,7 +55,22 @@ export default async function PublicCaseVerificationPage({
             <span>Portal Login</span>
           </Link>
 
-          {record && <PrintVerificationButton />}
+          {record && (
+            <div className="flex items-center gap-2">
+              {record.isDisposed && (
+                <a
+                  href={`/api/pdf/judgment/${encodeURIComponent(record.cin)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-8 px-2.5 inline-flex items-center gap-1.5 text-xs font-medium rounded-sm border border-border bg-background hover:bg-muted text-foreground transition-colors"
+                >
+                  <FileText className="size-3.5 text-accent" />
+                  <span>Download Decree (PDF)</span>
+                </a>
+              )}
+              <PrintVerificationButton />
+            </div>
+          )}
         </div>
 
         {/* Official Court Registry Header */}

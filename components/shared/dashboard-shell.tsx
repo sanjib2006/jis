@@ -27,6 +27,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           user={user}
           onOpenMobileNav={() => setMobileOpen(true)}
           onToggleAssistant={() => setAssistantOpen((prev) => !prev)}
+          isAssistantOpen={assistantOpen}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto w-full">{children}</div>

@@ -11,9 +11,15 @@ interface TopbarProps {
   user: CurrentUser | null;
   onOpenMobileNav?: () => void;
   onToggleAssistant?: () => void;
+  isAssistantOpen?: boolean;
 }
 
-export function Topbar({ user, onOpenMobileNav, onToggleAssistant }: TopbarProps) {
+export function Topbar({
+  user,
+  onOpenMobileNav,
+  onToggleAssistant,
+  isAssistantOpen = false,
+}: TopbarProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
@@ -56,8 +62,12 @@ export function Topbar({ user, onOpenMobileNav, onToggleAssistant }: TopbarProps
               variant="outline"
               size="sm"
               onClick={onToggleAssistant}
-              className="text-xs h-7 px-2.5 gap-1.5 border-accent/40 text-foreground hover:bg-accent/10 hover:text-accent transition-colors font-medium rounded-sm"
-              title="Open Judicial AI Assistant"
+              className={`text-xs h-7 px-2.5 gap-1.5 transition-colors font-medium rounded-sm ${
+                isAssistantOpen
+                  ? "bg-accent/15 text-accent border-accent font-semibold shadow-xs"
+                  : "border-accent/40 text-foreground hover:bg-accent/10 hover:text-accent"
+              }`}
+              title={isAssistantOpen ? "Close AI Assistant" : "Open Judicial AI Assistant"}
             >
               <Bot className="size-3.5 text-accent" />
               <span className="hidden sm:inline">AI Assistant</span>

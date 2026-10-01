@@ -1,7 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({
+    datasources: process.env.DIRECT_URL
+      ? {
+          db: {
+            url: process.env.DIRECT_URL,
+          },
+        }
+      : undefined,
+  });
 };
 
 declare const globalThis: {

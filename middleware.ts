@@ -52,9 +52,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Enforce role isolation on dashboard sub-routes
+  // Enforce role isolation & 2FA on dashboard sub-routes
   if (user && isDashboardRoute) {
     const userRole = (user.user_metadata?.role as string) || "REGISTRAR";
+
+    // Strictly enforce 2FA verification for Registrar accessing administrative routes
+    if (userRole === "REGISTRAR" && pathname.startsWith("/registrar")) {
+      const is2faVerified =
+        request.cookies.get("jis_2fa_verified")?.value === "true";
+      if (!is2faVerified) {
+        const loginUrl = request.nextUrl.clone();
+        loginUrl.pathname = "/login";
+        loginUrl.searchParams.set("error", "2fa_required");
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+
     const expectedPrefix = `/${userRole.toLowerCase()}`;
     if (!pathname.startsWith(expectedPrefix)) {
       const redirectUrl = request.nextUrl.clone();
@@ -66,6 +79,16 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from login page
   if (user && pathname === "/login") {
     const userRole = (user.user_metadata?.role as string) || "REGISTRAR";
+
+    // If Registrar has pending 2FA verification, keep them on the login page
+    if (userRole === "REGISTRAR") {
+      const is2faVerified =
+        request.cookies.get("jis_2fa_verified")?.value === "true";
+      if (!is2faVerified) {
+        return response;
+      }
+    }
+
     const roleRoutes: Record<string, string> = {
       REGISTRAR: "/registrar",
       JUDGE: "/judge",

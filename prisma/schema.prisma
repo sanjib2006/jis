@@ -44,6 +44,7 @@ model User {
   lawyerCases     Case[]     @relation("LawyerCases")
   caseViews       CaseView[]
   auditLogs       AuditLog[]
+  twoFactorChallenges TwoFactorChallenge[]
 
   @@index([role])
 }
@@ -150,4 +151,17 @@ model AuditLog {
   @@index([actorId])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+model TwoFactorChallenge {
+  id        String    @id @default(uuid())
+  userId    String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

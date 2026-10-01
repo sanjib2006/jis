@@ -10,7 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   QrCode,
   Copy,
@@ -48,7 +49,7 @@ export function QrVerificationDialog({
       QRCode.toString(url, {
         type: "svg",
         margin: 1,
-        width: 200,
+        width: 160,
         color: {
           dark: "#0f172a", // Slate-navy charcoal
           light: "#ffffff",
@@ -103,8 +104,8 @@ export function QrVerificationDialog({
         </DialogTrigger>
       )}
 
-      <DialogContent className="sm:max-w-md rounded-sm border border-border p-5 bg-card">
-        <DialogHeader className="pb-3 border-b border-border/70 space-y-1">
+      <DialogContent className="sm:max-w-md border border-border bg-card">
+        <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
             <ShieldCheck className="size-4 text-accent" />
             <DialogTitle className="text-sm font-semibold tracking-tight">
@@ -117,23 +118,23 @@ export function QrVerificationDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-3 flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3.5">
           {/* QR Code Container */}
-          <div className="p-3 bg-white rounded-sm border border-border/80 shadow-xs flex items-center justify-center">
+          <div className="p-2.5 bg-white rounded-sm border border-border shadow-2xs flex items-center justify-center">
             {svgMarkup ? (
               <div
-                className="w-48 h-48 flex items-center justify-center"
+                className="w-40 h-40 flex items-center justify-center"
                 dangerouslySetInnerHTML={{ __html: svgMarkup }}
               />
             ) : (
-              <div className="w-48 h-48 flex items-center justify-center text-xs text-muted-foreground animate-pulse font-mono">
+              <div className="w-40 h-40 flex items-center justify-center text-xs text-muted-foreground animate-pulse font-mono">
                 Generating QR...
               </div>
             )}
           </div>
 
           {/* Docket Info Box */}
-          <div className="w-full bg-muted/40 border border-border/60 rounded-sm p-2.5 text-xs space-y-1.5 font-sans">
+          <div className="w-full bg-muted/40 border border-border/70 rounded-sm p-2.5 text-xs space-y-1.5 font-sans">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-muted-foreground font-mono uppercase">
                 Case Identification:
@@ -162,56 +163,62 @@ export function QrVerificationDialog({
 
           {/* Explanatory Notice */}
           <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-            Anyone scanning this QR code with a phone camera or barcode reader
-            is immediately directed to the unauthenticated public verification
-            registry to review the official court order and tamper-evident hash.
+            Scan with any mobile camera to view the authentic court decree on the
+            public registry.
           </p>
 
           {/* Action Buttons */}
-          <div className="w-full grid grid-cols-2 gap-2 pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyLink}
-              className="text-xs h-8 rounded-sm gap-1.5 border-border"
-            >
-              {copied ? (
-                <>
-                  <Check className="size-3.5 text-emerald-600" />
-                  <span>Link Copied</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="size-3.5 text-muted-foreground" />
-                  <span>Copy Link</span>
-                </>
-              )}
-            </Button>
-
-            {pngDataUrl && (
+          <div className="w-full space-y-2 pt-0.5">
+            {verifyUrl && (
               <a
-                href={pngDataUrl}
-                download={`JIS-VERIFY-${cin}.png`}
-                className="inline-flex items-center justify-center text-xs h-8 rounded-sm gap-1.5 border border-border bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium transition-colors"
+                href={verifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  buttonVariants({ variant: "default" }),
+                  "w-full h-8 text-xs font-medium rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 shadow-none"
+                )}
               >
-                <Download className="size-3.5 text-muted-foreground" />
-                <span>Save QR Image</span>
+                <ExternalLink className="size-3.5" />
+                <span>Open Public Verification Page</span>
               </a>
             )}
-          </div>
 
-          {/* Direct External Link */}
-          {verifyUrl && (
-            <a
-              href={verifyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] text-accent hover:underline flex items-center gap-1 font-medium pt-0.5"
-            >
-              <span>Open Public Verification Page</span>
-              <ExternalLink className="size-3" />
-            </a>
-          )}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyLink}
+                className="h-8 text-xs rounded-sm gap-1.5 border-border bg-background hover:bg-muted text-foreground font-medium"
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-3.5 text-emerald-600" />
+                    <span>Link Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-3.5 text-muted-foreground" />
+                    <span>Copy Link</span>
+                  </>
+                )}
+              </Button>
+
+              {pngDataUrl && (
+                <a
+                  href={pngDataUrl}
+                  download={`JIS-VERIFY-${cin}.png`}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-8 text-xs rounded-sm gap-1.5 border-border bg-background hover:bg-muted text-foreground font-medium flex items-center justify-center"
+                  )}
+                >
+                  <Download className="size-3.5 text-muted-foreground" />
+                  <span>Save QR Image</span>
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

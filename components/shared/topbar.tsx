@@ -4,15 +4,16 @@ import { useTransition } from "react";
 import { logoutAction } from "@/actions/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, Bot } from "lucide-react";
 import type { CurrentUser } from "@/types";
 
 interface TopbarProps {
   user: CurrentUser | null;
   onOpenMobileNav?: () => void;
+  onToggleAssistant?: () => void;
 }
 
-export function Topbar({ user, onOpenMobileNav }: TopbarProps) {
+export function Topbar({ user, onOpenMobileNav, onToggleAssistant }: TopbarProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
@@ -50,6 +51,18 @@ export function Topbar({ user, onOpenMobileNav }: TopbarProps) {
                 {user.role}
               </Badge>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleAssistant}
+              className="text-xs h-7 px-2.5 gap-1.5 border-accent/40 text-foreground hover:bg-accent/10 hover:text-accent transition-colors font-medium rounded-sm"
+              title="Open Judicial AI Assistant"
+            >
+              <Bot className="size-3.5 text-accent" />
+              <span className="hidden sm:inline">AI Assistant</span>
+            </Button>
+
             <Button
               variant="ghost"
               size="sm"

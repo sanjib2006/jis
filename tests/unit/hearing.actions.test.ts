@@ -35,8 +35,14 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+// Mock email service
+vi.mock("@/lib/email", () => ({
+  sendHearingNoticeEmail: vi.fn().mockResolvedValue({ success: true, id: "msg_mock_123" }),
+}));
+
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendHearingNoticeEmail } from "@/lib/email";
 import {
   getAvailableSlotsAction,
   scheduleHearingAction,
@@ -214,6 +220,75 @@ describe("Phase 4 — Hearing Scheduling, Adjournment & Proceedings Unit Tests",
       expect(result.success).toBe(false);
       expect(result.error).toContain("maximum capacity of 3");
       expect(prisma.hearing.create).not.toHaveBeenCalled();
+    });
+
+    it("successfully schedules hearing, updates case status to PENDING, logs audit, and dispatches email notice", async () => {
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        id: "reg-1",
+        name: "Chief Registrar",
+        email: "reg@jis.local",
+        role: "REGISTRAR",
+        isActive: true,
+        createdAt: new Date(),
+      });
+
+      vi.mocked(prisma.case.findUnique).mockResolvedValue({
+        cin,
+        defendantName: "Accused Person",
+        crimeType: "Cyber Theft",
+        status: "REGISTERED",
+        judgeId,
+        judge: { name: "Hon. Justice Sen" } as any,
+        prosecutor: { name: "Adv. Public Prosecutor", email: "pp@jis.local" } as any,
+        lawyer: { name: "Adv. Defense", email: "defense@jis.local" } as any,
+      } as any);
+
+      vi.mocked(prisma.courtroom.findUnique).mockResolvedValue({
+        id: courtroomId,
+        name: "Courtroom 101",
+        location: "1st Floor",
+        maxSlots: 5,
+        isActive: true,
+        hearings: [],
+      });
+
+      vi.mocked(prisma.hearing.findFirst).mockResolvedValue(null);
+
+      vi.mocked(prisma.hearing.create).mockResolvedValue({
+        id: "new-hearing-1",
+        cin,
+        courtroomId,
+        hearingDate: testDate,
+        hearingStatus: "SCHEDULED",
+        proceedingSummary: null,
+        adjournmentReason: null,
+        nextHearingDate: null,
+        createdAt: new Date(),
+      });
+
+      const result = await scheduleHearingAction({
+        cin,
+        courtroomId,
+        hearingDate: testDate,
+      });
+
+      expect(result.success).toBe(true);
+      expect(prisma.hearing.create).toHaveBeenCalled();
+      expect(prisma.case.update).toHaveBeenCalledWith({
+        where: { cin },
+        data: { status: "PENDING" },
+      });
+      expect(sendHearingNoticeEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cin,
+          defendantName: "Accused Person",
+          crimeType: "Cyber Theft",
+          courtroomName: "Courtroom 101",
+          judgeName: "Hon. Justice Sen",
+          prosecutorName: "Adv. Public Prosecutor",
+          lawyerName: "Adv. Defense",
+        })
+      );
     });
   });
 

@@ -2,23 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, FileText, Scale, BookOpen } from "lucide-react";
 
-function CourthouseMark({ className = "w-8 h-8" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      fill="none"
-      aria-hidden="true"
-      className={className}
-    >
-      <path
-        d="M8 21h48M12 21l20-11 20 11M16 25v25M27 25v25M37 25v25M48 25v25M10 53h44"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="square"
-      />
-    </svg>
-  );
-}
 
 export default function Home() {
   return (
@@ -27,7 +10,14 @@ export default function Home() {
       <header className="border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-20 shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <CourthouseMark className="w-7 h-7 sm:w-8 sm:h-8 text-accent shrink-0" />
+            <Image
+              src="/emblem.ico"
+              alt="Judiciary Information System Emblem"
+              width={32}
+              height={32}
+              unoptimized
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0"
+            />
             <span className="font-semibold text-base sm:text-lg tracking-tight text-foreground">
               Judiciary Information System
             </span>
@@ -174,7 +164,14 @@ export default function Home() {
       <footer className="bg-primary text-primary-foreground py-3.5 sm:py-4 border-t border-sidebar-border shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-6">
           <div className="flex items-center gap-3">
-            <CourthouseMark className="w-6 h-6 sm:w-7 sm:h-7 text-accent shrink-0" />
+            <Image
+              src="/emblem.ico"
+              alt="Judiciary Information System Emblem"
+              width={28}
+              height={28}
+              unoptimized
+              className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0"
+            />
             <div>
               <div className="text-xs sm:text-sm font-semibold tracking-tight">
                 Judiciary Information System

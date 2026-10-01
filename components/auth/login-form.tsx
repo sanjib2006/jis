@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -94,8 +95,15 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm rounded border border-border bg-card shadow-none">
       <CardHeader className="space-y-1.5 pb-4">
-        <div className="flex items-center gap-2">
-          <div className="size-2 rounded-full bg-accent" />
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/emblem.ico"
+            alt="Judiciary Information System Emblem"
+            width={24}
+            height={24}
+            unoptimized
+            className="size-6 object-contain shrink-0"
+          />
           <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
             {step === "credentials"
               ? "Judiciary Information System"

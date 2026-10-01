@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ROLE_NAV_MAP, type NavItem } from "@/lib/nav-config";
 import type { CurrentUser } from "@/types";
@@ -25,8 +26,15 @@ export function Sidebar({
   const navContent = (
     <div className="flex flex-col h-full bg-primary text-primary-foreground select-none">
       <div className="h-12 border-b border-sidebar-border px-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="size-2 rounded-full bg-accent" />
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Image
+            src="/emblem.ico"
+            alt="JIS Emblem"
+            width={20}
+            height={20}
+            unoptimized
+            className="size-5 object-contain shrink-0"
+          />
           <span className="font-semibold text-sm tracking-tight text-primary-foreground">
             JIS Portal
           </span>

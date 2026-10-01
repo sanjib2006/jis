@@ -11,6 +11,7 @@ import {
   type RecordSummaryInput,
 } from "@/lib/validators/hearing";
 import { logAudit } from "@/actions/audit.actions";
+import { sendHearingNoticeEmail } from "@/lib/email";
 import type { ActionResult, Hearing, Courtroom, Case, User } from "@/types";
 import { revalidatePath } from "next/cache";
 
@@ -142,6 +143,11 @@ export async function scheduleHearingAction(
   // Check Case
   const caseRecord = await prisma.case.findUnique({
     where: { cin: validated.cin },
+    include: {
+      judge: true,
+      prosecutor: true,
+      lawyer: true,
+    },
   });
 
   if (!caseRecord) {
@@ -227,6 +233,29 @@ export async function scheduleHearingAction(
         hearingDate: newHearing.hearingDate,
       }
     );
+
+    // Non-blocking dispatch of formal hearing notice to assigned counsel
+    try {
+      await sendHearingNoticeEmail({
+        cin: validated.cin,
+        defendantName: caseRecord.defendantName,
+        crimeType: caseRecord.crimeType,
+        hearingDate: newHearing.hearingDate,
+        courtroomName: courtroom.name,
+        courtroomLocation: courtroom.location,
+        judgeName: caseRecord.judge?.name || "Hon. Presiding Judge",
+        prosecutorName:
+          caseRecord.prosecutor?.name || "State Public Prosecutor",
+        prosecutorEmail: caseRecord.prosecutor?.email || "",
+        lawyerName: caseRecord.lawyer?.name || "Defense Counsel",
+        lawyerEmail: caseRecord.lawyer?.email || "",
+      });
+    } catch (emailErr) {
+      console.error(
+        "Non-blocking error dispatching hearing notices:",
+        emailErr
+      );
+    }
 
     revalidatePath(`/registrar/cases/${validated.cin}`);
     revalidatePath("/registrar/hearings");

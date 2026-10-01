@@ -1,7 +1,8 @@
 import { CinBadge } from "@/components/shared/cin-badge";
+import { QrVerificationDialog } from "@/components/shared/qr-verification-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, Gavel, Shield, User, Scale, Lock } from "lucide-react";
+import { Calendar, Gavel, Shield, User, Scale, Lock, FileText } from "lucide-react";
 import type { Case, User as UserModel, Judgment } from "@/types";
 
 interface CaseDetailProps {
@@ -46,9 +47,20 @@ export function CaseDetail({ caseData }: CaseDetailProps) {
                 Official Judicial Judgment
               </CardTitle>
             </div>
-            <span className="font-mono text-[11px] text-muted-foreground">
-              Date: {format(new Date(caseData.judgment.judgmentDate), "dd MMM yyyy")}
-            </span>
+            <div className="flex items-center gap-2.5">
+              <a
+                href={`/api/pdf/judgment/${encodeURIComponent(caseData.cin)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm border border-border bg-background hover:bg-muted text-foreground transition-colors shadow-none"
+              >
+                <FileText className="size-3.5 text-accent" />
+                <span>Certified Decree (PDF)</span>
+              </a>
+              <span className="font-mono text-[11px] text-muted-foreground hidden sm:inline">
+                Date: {format(new Date(caseData.judgment.judgmentDate), "dd MMM yyyy")}
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="pt-3.5 space-y-2 text-xs">
             <div className="text-[11px] text-muted-foreground font-mono uppercase">
@@ -72,9 +84,16 @@ export function CaseDetail({ caseData }: CaseDetailProps) {
               Registration Timestamp: {format(new Date(caseData.createdAt), "dd MMM yyyy, HH:mm")}
             </p>
           </div>
-          <span className="font-mono text-xs uppercase px-2 py-0.5 rounded-sm border border-border bg-muted/50 font-semibold">
-            Status: {caseData.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <QrVerificationDialog
+              cin={caseData.cin}
+              defendantName={caseData.defendantName}
+              caseStatus={caseData.status}
+            />
+            <span className="font-mono text-xs uppercase px-2 py-0.5 rounded-sm border border-border bg-muted/50 font-semibold">
+              Status: {caseData.status}
+            </span>
+          </div>
         </CardHeader>
         <CardContent className="pt-4 space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

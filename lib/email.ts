@@ -10,6 +10,18 @@ export function hashOtp(code: string): string {
   return crypto.createHash("sha256").update(code.trim()).digest("hex");
 }
 
+/**
+ * Formats sender address with the designated display name according to RFC 5322.
+ * e.g. "JIS Portal | Authentication" <jis@sanjib.me>
+ */
+export function formatSenderAddress(senderName: string, rawFromEmail?: string): string {
+  const defaultEmail = "jis@sanjib.me";
+  const raw = (rawFromEmail || process.env.SMTP_FROM_EMAIL || defaultEmail).trim();
+  const emailMatch = raw.match(/<([^>]+)>/);
+  const email = emailMatch ? emailMatch[1].trim() : raw;
+  return `"${senderName}" <${email}>`;
+}
+
 function getSmtpTransport() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -34,7 +46,7 @@ export async function sendOtpEmail({
   const smtpHost = process.env.SMTP_HOST;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
-  const fromEmail = process.env.SMTP_FROM_EMAIL || "jis@sanjib.me";
+  const senderAddress = formatSenderAddress("JIS | Authentication");
   const toEmail = process.env.TO_EMAIL || process.env.TWO_FACTOR_RECIPIENT_EMAIL;
 
   if (!smtpHost || !smtpUser || !smtpPass || !toEmail) {
@@ -52,6 +64,7 @@ export async function sendOtpEmail({
     console.log("\n" + "=".repeat(64));
     console.log("  ⚖️  JUDICIARY INFORMATION SYSTEM — TWO-FACTOR AUTHENTICATION");
     console.log("=".repeat(64));
+    console.log(`  Sender             : ${senderAddress}`);
     console.log(`  Recipient Address  : ${toEmail}`);
     console.log(`  Officer Name       : ${name}`);
     console.log(`  Security Code      : [ ${code.split("").join(" ")} ]`);
@@ -62,7 +75,7 @@ export async function sendOtpEmail({
   try {
     const transporter = getSmtpTransport();
     const info = await transporter.sendMail({
-      from: fromEmail,
+      from: senderAddress,
       to: toEmail,
       subject: "Your Judiciary Portal verification code",
       html: `
@@ -178,7 +191,7 @@ export async function sendHearingNoticeEmail(
   const smtpHost = process.env.SMTP_HOST;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
-  const fromEmail = process.env.SMTP_FROM_EMAIL || "jis@sanjib.me";
+  const senderAddress = formatSenderAddress("JIS | Court Notifications");
 
   // In development, testing, or sandbox mode with mock/seed data,
   // route all notice emails to TO_EMAIL if defined
@@ -251,6 +264,7 @@ export async function sendHearingNoticeEmail(
     console.log("\n" + "=".repeat(64));
     console.log("  ⚖️  JUDICIARY INFORMATION SYSTEM — NOTICE OF HEARING DISPATCH");
     console.log("=".repeat(64));
+    console.log(`  Sender             : ${senderAddress}`);
     console.log(`  Case CIN           : ${options.cin}`);
     console.log(`  Matter             : State vs. ${options.defendantName}`);
     console.log(`  Scheduled Hearing  : ${formattedDateTime}`);
@@ -273,7 +287,7 @@ export async function sendHearingNoticeEmail(
   try {
     const transporter = getSmtpTransport();
     const info = await transporter.sendMail({
-      from: fromEmail,
+      from: senderAddress,
       to: recipients.join(", "),
       subject: `Court Notice: Hearing Scheduled | Case ${options.cin}`,
       html: `

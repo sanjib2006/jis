@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   generateSecureOtp,
   hashOtp,
+  formatSenderAddress,
   sendOtpEmail,
   sendHearingNoticeEmail,
 } from "@/lib/email";
@@ -29,6 +30,27 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
 
   afterEach(() => {
     process.env = originalEnv;
+  });
+
+  describe("Sender Address Formatting", () => {
+    it("formats sender address with designated name and default email", () => {
+      delete process.env.SMTP_FROM_EMAIL;
+      expect(formatSenderAddress("JIS | Authentication")).toBe(
+        '"JIS | Authentication" <jis@sanjib.me>'
+      );
+    });
+
+    it("formats sender address with custom SMTP_FROM_EMAIL", () => {
+      expect(
+        formatSenderAddress("JIS | Court Notifications", "notifications@court.gov.in")
+      ).toBe('"JIS | Court Notifications" <notifications@court.gov.in>');
+    });
+
+    it("extracts email when angle brackets are present in raw address", () => {
+      expect(
+        formatSenderAddress("JIS | Authentication", "Legacy Sender <legacy@court.gov.in>")
+      ).toBe('"JIS | Authentication" <legacy@court.gov.in>');
+    });
   });
 
   describe("OTP Generation & Hashing", () => {
@@ -91,7 +113,7 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       expect(mockSendMail).toHaveBeenCalledOnce();
 
       const sentArgs = mockSendMail.mock.calls[0][0];
-      expect(sentArgs.from).toBe("jis@sanjib.me");
+      expect(sentArgs.from).toBe('"JIS | Authentication" <jis@sanjib.me>');
       expect(sentArgs.to).toBe("registrar@jis.local");
       expect(sentArgs.subject).toBe("Your Judiciary Portal verification code");
       expect(sentArgs.html).toContain("987654");
@@ -172,6 +194,7 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       expect(mockSendMail).toHaveBeenCalledOnce();
 
       const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.from).toBe('"JIS | Court Notifications" <jis@sanjib.me>');
       expect(sentArgs.to).toBe("sandbox-owner@court.gov.in");
       expect(sentArgs.subject).toBe("Court Notice: Hearing Scheduled | Case CIN-2026-0042");
       expect(sentArgs.html).toContain("CIN-2026-0042");
@@ -197,6 +220,7 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
 
       expect(result.success).toBe(true);
       const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.from).toBe('"JIS | Court Notifications" <jis@sanjib.me>');
       expect(sentArgs.to).toBe("prosecutor@jis.local, defense@lawfirm.in");
     });
 

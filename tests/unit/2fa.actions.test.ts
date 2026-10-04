@@ -133,7 +133,7 @@ describe("Registrar Two-Factor Authentication (2FA) Unit Tests", () => {
       expect(sendOtpEmail).not.toHaveBeenCalled();
     });
 
-    it("triggers 2FA for REGISTRAR role, creates challenge, and dispatches email via Resend", async () => {
+    it("triggers 2FA for REGISTRAR role, creates challenge, and dispatches email via SMTP", async () => {
       mockSignInWithPassword.mockResolvedValue({
         data: { user: { id: "reg-1", email: "registrar@jis.local" } },
         error: null,
@@ -176,7 +176,7 @@ describe("Registrar Two-Factor Authentication (2FA) Unit Tests", () => {
         })
       );
 
-      // Verify email dispatched via Resend
+      // Verify email dispatched via SMTP
       expect(sendOtpEmail).toHaveBeenCalledWith({
         code: "482915",
         name: "Chief Registrar",

@@ -101,14 +101,14 @@ export async function loginAction(
         },
       });
 
-      // Dispatch OTP email via Resend
+      // Dispatch OTP email via SMTP
       const emailResult = await sendOtpEmail({
         code: otp,
         name: userRecord.name,
       });
 
       if (!emailResult.success) {
-        console.warn("Notice: Resend email dispatch failed:", emailResult.error);
+        console.warn("Notice: SMTP email dispatch failed:", emailResult.error);
       }
 
       // Log audit entry

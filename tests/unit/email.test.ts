@@ -6,12 +6,25 @@ import {
   sendHearingNoticeEmail,
 } from "@/lib/email";
 
+// Mock nodemailer
+const mockSendMail = vi.fn();
+vi.mock("nodemailer", () => ({
+  default: {
+    createTransport: vi.fn(() => ({
+      sendMail: mockSendMail,
+    })),
+  },
+}));
+
 describe("Email Service & Hearing Notice Engine Unit Tests", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     vi.clearAllMocks();
     process.env = { ...originalEnv };
+    delete process.env.TO_EMAIL;
+    delete process.env.TWO_FACTOR_RECIPIENT_EMAIL;
+    mockSendMail.mockResolvedValue({ messageId: "<mock_msg_id@smtp>" });
   });
 
   afterEach(() => {
@@ -38,17 +51,22 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
   });
 
   describe("sendOtpEmail", () => {
-    it("returns error if RESEND_API_KEY is missing", async () => {
-      delete process.env.RESEND_API_KEY;
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "registrar@court.gov.in";
+    it("returns error if SMTP configuration is missing", async () => {
+      delete process.env.SMTP_HOST;
+      delete process.env.SMTP_USER;
+      delete process.env.SMTP_PASS;
+      process.env.TO_EMAIL = "registrar@court.gov.in";
 
       const result = await sendOtpEmail({ code: "123456" });
       expect(result.success).toBe(false);
       expect(result.error).toContain("configuration is missing");
     });
 
-    it("returns error if TWO_FACTOR_RECIPIENT_EMAIL is missing", async () => {
-      process.env.RESEND_API_KEY = "re_test_12345";
+    it("returns error if TO_EMAIL is missing", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      delete process.env.TO_EMAIL;
       delete process.env.TWO_FACTOR_RECIPIENT_EMAIL;
 
       const result = await sendOtpEmail({ code: "123456" });
@@ -56,16 +74,12 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       expect(result.error).toContain("configuration is missing");
     });
 
-    it("dispatches OTP email payload with Resend API", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "registrar@jis.local";
-      process.env.RESEND_FROM_EMAIL = "onboarding@resend.dev";
-
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: "msg_otp_123" }),
-      });
-      global.fetch = mockFetch;
+    it("dispatches OTP email payload via SMTP transport to TO_EMAIL", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.SMTP_FROM_EMAIL = "jis@sanjib.me";
+      process.env.TO_EMAIL = "registrar@jis.local";
 
       const result = await sendOtpEmail({
         code: "987654",
@@ -73,39 +87,48 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.id).toBe("msg_otp_123");
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.resend.com/emails",
-        expect.objectContaining({
-          method: "POST",
-          headers: expect.objectContaining({
-            Authorization: "Bearer re_mock_api_key",
-            "Content-Type": "application/json",
-          }),
-        })
-      );
+      expect(result.id).toBe("<mock_msg_id@smtp>");
+      expect(mockSendMail).toHaveBeenCalledOnce();
 
-      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(sentBody.to).toBe("registrar@jis.local");
-      expect(sentBody.subject).toBe("Your Judiciary Portal verification code");
-      expect(sentBody.html).toContain("987654");
-      expect(sentBody.html).toContain("Hon. Registrar");
-      expect(sentBody.html).toContain("Valid for 10 minutes · Single use");
-      expect(sentBody.html).toContain("We received a request to sign in to your Registrar administrative account.");
+      const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.from).toBe("jis@sanjib.me");
+      expect(sentArgs.to).toBe("registrar@jis.local");
+      expect(sentArgs.subject).toBe("Your Judiciary Portal verification code");
+      expect(sentArgs.html).toContain("987654");
+      expect(sentArgs.html).toContain("Hon. Registrar");
+      expect(sentArgs.html).toContain("Valid for 10 minutes · Single use");
+      expect(sentArgs.html).toContain("We received a request to sign in to your Registrar administrative account.");
     });
 
-    it("handles Resend API rejection gracefully", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "registrar@jis.local";
+    it("falls back to TWO_FACTOR_RECIPIENT_EMAIL when TO_EMAIL is not set", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.SMTP_FROM_EMAIL = "jis@sanjib.me";
+      delete process.env.TO_EMAIL;
+      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "legacy-registrar@jis.local";
 
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        text: async () => "Forbidden: Invalid API key",
+      const result = await sendOtpEmail({
+        code: "987654",
+        name: "Hon. Registrar",
       });
+
+      expect(result.success).toBe(true);
+      const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.to).toBe("legacy-registrar@jis.local");
+    });
+
+    it("handles SMTP transport errors gracefully", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.TO_EMAIL = "registrar@jis.local";
+
+      mockSendMail.mockRejectedValue(new Error("SMTP connection refused"));
 
       const result = await sendOtpEmail({ code: "123456" });
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Forbidden");
+      expect(result.error).toContain("SMTP connection refused");
     });
   });
 
@@ -125,92 +148,83 @@ describe("Email Service & Hearing Notice Engine Unit Tests", () => {
       baseUrl: "https://jis.court.gov.in",
     };
 
-    it("returns error if RESEND_API_KEY is missing", async () => {
-      delete process.env.RESEND_API_KEY;
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "counsel@court.gov.in";
+    it("returns error if SMTP configuration is missing", async () => {
+      delete process.env.SMTP_HOST;
+      delete process.env.SMTP_USER;
+      delete process.env.SMTP_PASS;
+      process.env.TO_EMAIL = "counsel@court.gov.in";
 
       const result = await sendHearingNoticeEmail(mockNoticeOptions);
       expect(result.success).toBe(false);
       expect(result.error).toContain("configuration or recipient addresses missing");
     });
 
-    it("routes to TWO_FACTOR_RECIPIENT_EMAIL in sandbox/development mode to prevent Resend 403 blocks", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "sandbox-owner@court.gov.in";
-
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: "msg_notice_sandbox" }),
-      });
-      global.fetch = mockFetch;
+    it("routes to TO_EMAIL in sandbox/development mode", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.TO_EMAIL = "sandbox-owner@court.gov.in";
 
       const result = await sendHearingNoticeEmail(mockNoticeOptions);
 
       expect(result.success).toBe(true);
-      expect(result.id).toBe("msg_notice_sandbox");
+      expect(result.id).toBe("<mock_msg_id@smtp>");
+      expect(mockSendMail).toHaveBeenCalledOnce();
 
-      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(sentBody.to).toBe("sandbox-owner@court.gov.in");
-      expect(sentBody.subject).toBe("Court Notice: Hearing Scheduled | Case CIN-2026-0042");
-      expect(sentBody.html).toContain("CIN-2026-0042");
-      expect(sentBody.html).toContain("State vs. Vikram Malhotra");
-      expect(sentBody.html).toContain("Courtroom 03");
-      expect(sentBody.html).toContain("Annex Wing, 2nd Floor");
-      expect(sentBody.html).toContain("Hon. Justice Sen");
-      expect(sentBody.html).toContain("Adv. Rajesh Sharma");
-      expect(sentBody.html).toContain("Adv. Meera Nair");
-      expect(sentBody.html).toContain("View Case Docket");
-      expect(sentBody.html).toContain("Directions to Counsel");
-      expect(sentBody.html).toContain("https://jis.court.gov.in/verify/CIN-2026-0042");
+      const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.to).toBe("sandbox-owner@court.gov.in");
+      expect(sentArgs.subject).toBe("Court Notice: Hearing Scheduled | Case CIN-2026-0042");
+      expect(sentArgs.html).toContain("CIN-2026-0042");
+      expect(sentArgs.html).toContain("State vs. Vikram Malhotra");
+      expect(sentArgs.html).toContain("Courtroom 03");
+      expect(sentArgs.html).toContain("Annex Wing, 2nd Floor");
+      expect(sentArgs.html).toContain("Hon. Justice Sen");
+      expect(sentArgs.html).toContain("Adv. Rajesh Sharma");
+      expect(sentArgs.html).toContain("Adv. Meera Nair");
+      expect(sentArgs.html).toContain("View Case Docket");
+      expect(sentArgs.html).toContain("Directions to Counsel");
+      expect(sentArgs.html).toContain("https://jis.court.gov.in/verify/CIN-2026-0042");
     });
 
-    it("routes directly to assigned counsel emails when TWO_FACTOR_RECIPIENT_EMAIL is not set", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
+    it("routes directly to assigned counsel emails when TO_EMAIL is not set", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      delete process.env.TO_EMAIL;
       delete process.env.TWO_FACTOR_RECIPIENT_EMAIL;
-
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: "msg_notice_prod" }),
-      });
-      global.fetch = mockFetch;
 
       const result = await sendHearingNoticeEmail(mockNoticeOptions);
 
       expect(result.success).toBe(true);
-      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(sentBody.to).toEqual([
-        "prosecutor@jis.local",
-        "defense@lawfirm.in",
-      ]);
+      const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.to).toBe("prosecutor@jis.local, defense@lawfirm.in");
     });
 
     it("resolves base URL from VERCEL_PROJECT_PRODUCTION_URL when baseUrl and NEXT_PUBLIC_APP_URL are not provided", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "sandbox@jis.local";
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.TO_EMAIL = "sandbox@jis.local";
       process.env.VERCEL_PROJECT_PRODUCTION_URL = "court-portal.vercel.app";
       delete process.env.NEXT_PUBLIC_APP_URL;
-
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: "msg_vercel" }),
-      });
-      global.fetch = mockFetch;
 
       const optionsWithoutBaseUrl = { ...mockNoticeOptions, baseUrl: undefined };
       const result = await sendHearingNoticeEmail(optionsWithoutBaseUrl);
 
       expect(result.success).toBe(true);
-      const sentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(sentBody.html).toContain(
+      const sentArgs = mockSendMail.mock.calls[0][0];
+      expect(sentArgs.html).toContain(
         "https://court-portal.vercel.app/verify/CIN-2026-0042"
       );
     });
 
-    it("handles Resend network errors gracefully without crashing caller", async () => {
-      process.env.RESEND_API_KEY = "re_mock_api_key";
-      process.env.TWO_FACTOR_RECIPIENT_EMAIL = "sandbox@jis.local";
+    it("handles SMTP network errors gracefully without crashing caller", async () => {
+      process.env.SMTP_HOST = "smtp-relay.brevo.com";
+      process.env.SMTP_USER = "user@smtp-brevo.com";
+      process.env.SMTP_PASS = "xsmtpsib-testkey";
+      process.env.TO_EMAIL = "sandbox@jis.local";
 
-      global.fetch = vi.fn().mockRejectedValue(new Error("DNS lookup failure"));
+      mockSendMail.mockRejectedValue(new Error("DNS lookup failure"));
 
       const result = await sendHearingNoticeEmail(mockNoticeOptions);
       expect(result.success).toBe(false);

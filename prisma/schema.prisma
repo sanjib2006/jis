@@ -63,6 +63,8 @@ model Case {
   cin                    String     @id @default(cuid())
   defendantName          String
   defendantAddress       String
+  idDocType              String?
+  idDocNumber            String?
   crimeType              String
   crimeDate              DateTime
   crimeLocation          String

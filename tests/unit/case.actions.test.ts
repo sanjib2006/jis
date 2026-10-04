@@ -54,6 +54,8 @@ describe("Phase 3 — Courtroom & Case Registration Unit Tests", () => {
   const validCasePayload = {
     defendantName: "Virendra Singh",
     defendantAddress: "14 Court Road, Civil Lines",
+    idDocType: "Aadhaar Card",
+    idDocNumber: "5829-1029-4820",
     crimeType: "IPC 379 - Theft",
     crimeDate: new Date("2026-01-10"),
     crimeLocation: "Railway Goods Shed",

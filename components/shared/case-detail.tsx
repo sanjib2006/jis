@@ -122,6 +122,27 @@ export function CaseDetail({ caseData }: CaseDetailProps) {
             <span className="text-foreground">{caseData.defendantAddress}</span>
           </div>
 
+          {caseData.idDocType && (
+            <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
+              <div>
+                <span className="text-[11px] text-muted-foreground block font-medium">
+                  Identity Proof Type
+                </span>
+                <span className="font-medium text-foreground">
+                  {caseData.idDocType}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-[11px] text-muted-foreground block font-medium">
+                  Document ID / Code
+                </span>
+                <span className="font-mono text-foreground font-semibold px-2 py-0.5 rounded border border-border bg-muted/40">
+                  {caseData.idDocNumber || "On Record"}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-border/40">
             <div>
               <span className="text-[11px] text-muted-foreground block font-medium">

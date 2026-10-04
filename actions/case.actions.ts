@@ -97,11 +97,26 @@ export async function registerCaseAction(
     };
   }
 
+  // Enforce Adversarial Integrity
+  if (validated.prosecutorId === validated.lawyerId) {
+    return {
+      success: false,
+      error: "The Public Prosecutor and Defense Counsel cannot be the same legal practitioner.",
+    };
+  }
+
   try {
+    const currentYear = new Date().getFullYear();
+    const caseCount = typeof prisma.case.count === "function" ? await prisma.case.count() : 0;
+    const cin = `CIN-${currentYear}-${String(caseCount + 1).padStart(4, "0")}`;
+
     const newCase = await prisma.case.create({
       data: {
+        cin,
         defendantName: validated.defendantName,
         defendantAddress: validated.defendantAddress,
+        idDocType: validated.idDocType,
+        idDocNumber: validated.idDocNumber,
         crimeType: validated.crimeType,
         crimeDate: new Date(validated.crimeDate),
         crimeLocation: validated.crimeLocation,

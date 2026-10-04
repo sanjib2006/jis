@@ -181,7 +181,9 @@ export function ScheduleHearingDialog({
                       disabled={isPending || slotCheckResult.judgeBooked}
                     >
                       <SelectTrigger id="courtroomId" className="h-8 text-xs rounded-sm">
-                        <SelectValue placeholder="Select available courtroom" />
+                        <SelectValue placeholder="Select available courtroom">
+                          {slotCheckResult.slots.find((s) => s.courtroomId === field.value)?.courtroomName}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="rounded-sm text-xs">
                         {slotCheckResult.slots.map((s) => {

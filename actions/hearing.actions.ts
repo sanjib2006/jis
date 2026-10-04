@@ -70,10 +70,10 @@ export async function getAvailableSlotsAction(
         hearingStatus: { in: ["SCHEDULED", "COMPLETED"] },
         case: { judgeId },
       },
-      include: { case: true },
+      include: { courtroom: true },
     });
 
-    const judgeBooked = Boolean(judgeHearing);
+    const assignedCourtroomId = judgeHearing?.courtroomId ?? null;
 
     // 2. Query active courtrooms with hearing counts on this date
     const courtrooms = await prisma.courtroom.findMany({
@@ -91,16 +91,23 @@ export async function getAvailableSlotsAction(
 
     const slots: AvailableSlotInfo[] = courtrooms.map((cr) => {
       const bookedSlots = cr.hearings.length;
-      const remainingSlots = Math.max(0, cr.maxSlots - bookedSlots);
+      const isCrossChamberConflict = assignedCourtroomId !== null && assignedCourtroomId !== cr.id;
+      const remainingSlots = isCrossChamberConflict ? 0 : Math.max(0, cr.maxSlots - bookedSlots);
+
       return {
         courtroomId: cr.id,
-        courtroomName: cr.name,
+        courtroomName: isCrossChamberConflict
+          ? `${cr.name} (Judge sitting in ${judgeHearing?.courtroom?.name || "other room"})`
+          : cr.name,
         location: cr.location,
         maxSlots: cr.maxSlots,
         bookedSlots,
         remainingSlots,
       };
     });
+
+    // Judge is only booked if they have an assigned chamber and no slots remain in it
+    const judgeBooked = Boolean(assignedCourtroomId !== null && slots.every((s) => s.remainingSlots <= 0));
 
     return {
       success: true,
@@ -189,19 +196,21 @@ export async function scheduleHearingAction(
     };
   }
 
-  // Check Judge Conflict
+  // Check Judge Conflict: A judge cannot preside across multiple chambers on the same date
   const judgeConflict = await prisma.hearing.findFirst({
     where: {
       hearingDate: { gte: start, lte: end },
+      courtroomId: { not: validated.courtroomId },
       hearingStatus: { in: ["SCHEDULED", "COMPLETED"] },
       case: { judgeId: caseRecord.judgeId },
     },
+    include: { courtroom: true },
   });
 
   if (judgeConflict) {
     return {
       success: false,
-      error: "The presiding Judge already has another hearing scheduled on this calendar date.",
+      error: `The presiding Judge already has another hearing scheduled in a different courtroom chamber ("${judgeConflict.courtroom?.name || "other chamber"}") on this calendar date.`,
     };
   }
 

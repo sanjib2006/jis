@@ -35,11 +35,14 @@ export function CaseRegistrationForm({
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [registeredCin, setRegisteredCin] = useState<string | null>(null);
+  const [docCategory, setDocCategory] = useState<string>("Aadhaar Card");
+  const [customDocName, setCustomDocName] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<CreateCaseInput>({
@@ -47,6 +50,8 @@ export function CaseRegistrationForm({
     defaultValues: {
       defendantName: "",
       defendantAddress: "",
+      idDocType: "Aadhaar Card",
+      idDocNumber: "",
       crimeType: "",
       crimeLocation: "",
       arrestingOfficer: "",
@@ -60,8 +65,16 @@ export function CaseRegistrationForm({
     setServerError(null);
     setRegisteredCin(null);
 
+    const submissionData = {
+      ...data,
+      idDocType:
+        docCategory === "Other"
+          ? (customDocName.trim() || "Other Document")
+          : data.idDocType,
+    };
+
     startTransition(async () => {
-      const result = await registerCaseAction(data);
+      const result = await registerCaseAction(submissionData);
       if (!result.success) {
         setServerError(result.error || "Failed to register court case.");
       } else if (result.data?.cin) {
@@ -69,6 +82,8 @@ export function CaseRegistrationForm({
         setRegisteredCin(cin);
         toast.success(`Case docket registered with CIN: ${cin}`);
         reset();
+        setDocCategory("Aadhaar Card");
+        setCustomDocName("");
       }
     });
   };
@@ -76,6 +91,8 @@ export function CaseRegistrationForm({
   const handleRegisterAnother = () => {
     setRegisteredCin(null);
     reset();
+    setDocCategory("Aadhaar Card");
+    setCustomDocName("");
   };
 
   return (
@@ -173,6 +190,77 @@ export function CaseRegistrationForm({
                     {errors.defendantAddress.message}
                   </p>
                 )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/40">
+                <div className="space-y-1">
+                  <Label htmlFor="idDocType" className="text-xs font-medium">
+                    Identity Proof Document Type
+                  </Label>
+                  <Select
+                    value={docCategory}
+                    onValueChange={(val) => {
+                      const selected = val || "Aadhaar Card";
+                      setDocCategory(selected);
+                      if (selected !== "Other") {
+                        setValue("idDocType", selected, { shouldValidate: true });
+                      } else {
+                        setValue("idDocType", customDocName.trim() || "Other Document", { shouldValidate: true });
+                      }
+                    }}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger id="idDocType" className="h-8 text-xs rounded-sm w-full">
+                      <SelectValue placeholder="Select Document Type">
+                        {docCategory === "Other" ? "Other (Custom Document)" : docCategory}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-sm text-xs">
+                      <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                      <SelectItem value="Voter ID (EPIC)">Voter ID (EPIC)</SelectItem>
+                      <SelectItem value="PAN Card">PAN Card</SelectItem>
+                      <SelectItem value="Passport">Passport</SelectItem>
+                      <SelectItem value="Other">Other (Specify Custom Name)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {docCategory === "Other" && (
+                    <div className="mt-1.5">
+                      <Input
+                        placeholder="Specify Document Name (e.g. Ration Card)"
+                        value={customDocName}
+                        onChange={(e) => {
+                          setCustomDocName(e.target.value);
+                          setValue("idDocType", e.target.value.trim() || "Other Document", { shouldValidate: true });
+                        }}
+                        disabled={isPending}
+                        className="h-8 text-xs rounded-sm"
+                      />
+                    </div>
+                  )}
+                  {errors.idDocType && (
+                    <p className="text-[11px] text-destructive">
+                      {errors.idDocType.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="idDocNumber" className="text-xs font-medium">
+                    Document Number / Unique Code
+                  </Label>
+                  <Input
+                    id="idDocNumber"
+                    placeholder="e.g. 5829-1029-4820 or ABCDE1234F"
+                    disabled={isPending}
+                    className="h-8 text-xs rounded-sm"
+                    {...register("idDocNumber")}
+                  />
+                  {errors.idDocNumber && (
+                    <p className="text-[11px] text-destructive">
+                      {errors.idDocNumber.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -310,7 +398,9 @@ export function CaseRegistrationForm({
                     disabled={isPending}
                   >
                     <SelectTrigger id="judgeId" className="h-8 text-xs rounded-sm">
-                      <SelectValue placeholder="Select Presiding Judge" />
+                      <SelectValue placeholder="Select Presiding Judge">
+                        {judges.find((j) => j.id === field.value)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="rounded-sm text-xs">
                       {judges.map((j) => (
@@ -343,7 +433,9 @@ export function CaseRegistrationForm({
                     disabled={isPending}
                   >
                     <SelectTrigger id="prosecutorId" className="h-8 text-xs rounded-sm">
-                      <SelectValue placeholder="Select Prosecutor" />
+                      <SelectValue placeholder="Select Prosecutor">
+                        {lawyers.find((l) => l.id === field.value)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="rounded-sm text-xs">
                       {lawyers.map((l) => (
@@ -376,7 +468,9 @@ export function CaseRegistrationForm({
                     disabled={isPending}
                   >
                     <SelectTrigger id="lawyerId" className="h-8 text-xs rounded-sm">
-                      <SelectValue placeholder="Select Defense Counsel" />
+                      <SelectValue placeholder="Select Defense Counsel">
+                        {lawyers.find((l) => l.id === field.value)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="rounded-sm text-xs">
                       {lawyers.map((l) => (

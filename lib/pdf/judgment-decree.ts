@@ -133,7 +133,10 @@ export async function generateJudgmentDecreePdf({
   doc.text("DEFENDANT (ACCUSED):", 16, startY + 12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(20, 33, 39);
-  doc.text(caseData.defendantName, 65, startY + 12);
+  const defDocLabel = caseData.idDocType && caseData.idDocNumber
+    ? `${caseData.defendantName} [${caseData.idDocType}: ${caseData.idDocNumber}]`
+    : caseData.defendantName;
+  doc.text(defDocLabel, 65, startY + 12);
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(100, 116, 139);

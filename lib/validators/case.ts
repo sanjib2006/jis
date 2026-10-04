@@ -12,6 +12,14 @@ export const createCaseSchema = z
       .min(5, "Defendant address must be at least 5 characters")
       .max(255, "Defendant address must not exceed 255 characters")
       .trim(),
+    idDocType: z
+      .string()
+      .min(2, "Select or specify identification document type")
+      .trim(),
+    idDocNumber: z
+      .string()
+      .min(2, "Enter identification document number or code")
+      .trim(),
     crimeType: z
       .string()
       .min(2, "Crime type or charge section must be specified")
@@ -42,6 +50,10 @@ export const createCaseSchema = z
     expectedCompletionDate: z.coerce.date({
       errorMap: () => ({ message: "Enter expected trial conclusion date" }),
     }),
+  })
+  .refine((data) => data.prosecutorId !== data.lawyerId, {
+    message: "Prosecutor and Defense Counsel cannot be the same legal practitioner",
+    path: ["lawyerId"],
   })
   .refine(
     (data) => new Date(data.arrestDate) >= new Date(data.crimeDate),

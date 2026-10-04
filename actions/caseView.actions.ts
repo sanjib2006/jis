@@ -85,6 +85,31 @@ export async function viewCaseAsLawyerAction(
       };
     }
 
+    // 24-Hour Docket Pass: If lawyer already viewed this case in the last 24 hours, reuse pass without duplicate charge
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentView = prisma.caseView.findFirst
+      ? await prisma.caseView.findFirst({
+          where: {
+            lawyerId: currentUser.id,
+            cin: caseRecord.cin,
+            viewedAt: { gte: oneDayAgo },
+          },
+          orderBy: { viewedAt: "desc" },
+        })
+      : null;
+
+    if (recentView) {
+      return {
+        success: true,
+        data: {
+          case: caseRecord,
+          caseViewId: recentView.id,
+          chargeAmount: Number(recentView.chargeAmount),
+          viewedAt: recentView.viewedAt,
+        },
+      };
+    }
+
     const caseView = await prisma.caseView.create({
       data: {
         lawyerId: currentUser.id,
